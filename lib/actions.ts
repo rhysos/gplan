@@ -13,6 +13,7 @@ import {
   getPlantInstancesByRowId,
   deletePlantInstance,
   getAllPlants,
+  getPlantUsageCounts,
   createPlantInstanceWithDetails,
 } from "./db"
 import { revalidatePath } from "next/cache"
@@ -68,14 +69,16 @@ export async function getGardenRows(gardenId: number) {
   return await getRowsByGardenId(gardenId)
 }
 
-export async function createGardenRow(gardenId: number, name: string, length: number) {
-  const row = await createRow(gardenId, name, length)
+// Update the createGardenRow function to include row_ends as a number
+export async function createGardenRow(gardenId: number, name: string, length: number, rowEnds = 0) {
+  const row = await createRow(gardenId, name, length, rowEnds)
   revalidatePath("/dashboard")
   return row
 }
 
-export async function updateGardenRow(rowId: number, name: string, length: number) {
-  const row = await updateRow(rowId, name, length)
+// Update the updateGardenRow function to include row_ends as a number
+export async function updateGardenRow(rowId: number, name: string, length: number, rowEnds = 0) {
+  const row = await updateRow(rowId, name, length, rowEnds)
   revalidatePath("/dashboard")
   return row
 }
@@ -89,6 +92,10 @@ export async function deleteGardenRow(rowId: number) {
 // Plant actions
 export async function getPlants() {
   return await getAllPlants()
+}
+
+export async function getFlowerUsageCounts() {
+  return await getPlantUsageCounts()
 }
 
 // Plant instance actions

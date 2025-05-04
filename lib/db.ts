@@ -216,37 +216,81 @@ export async function deleteGarden(gardenId: number, userId: number) {
 // Row functions
 export async function getRowsByGardenId(gardenId: number) {
   return executeQuery(async (sql) => {
-    return await sql`
-      SELECT id, name, length, created_at, updated_at
-      FROM garden_rows
-      WHERE garden_id = ${gardenId}
-      ORDER BY created_at ASC
-    `
+    try {
+      return await sql`
+        SELECT id, name, length, row_ends, created_at, updated_at
+        FROM garden_rows
+        WHERE garden_id = ${gardenId}
+        ORDER BY created_at ASC
+      `
+    } catch (error) {
+      // If row_ends column doesn't exist, fall back to the original query
+      if (error instanceof Error && error.message.includes('column "row_ends" does not exist')) {
+        console.log("Row ends column doesn't exist, using fallback query")
+        const rows = await sql`
+          SELECT id, name, length, created_at, updated_at
+          FROM garden_rows
+          WHERE garden_id = ${gardenId}
+          ORDER BY created_at ASC
+        `
+        // Add default row_ends value
+        return rows.map((row) => ({
+          ...row,
+          row_ends: 0, // Default to 0
+        }))
+      }
+      throw error
+    }
   }, "Failed to get rows")
 }
 
-export async function createRow(gardenId: number, name: string, length: number) {
+export async function createRow(gardenId: number, name: string, length: number, rowEnds = 0) {
   return executeQuery(async (sql) => {
-    const result = await sql`
-      INSERT INTO garden_rows (garden_id, name, length)
-      VALUES (${gardenId}, ${name}, ${length})
-      RETURNING id, name, length, created_at, updated_at
-    `
-
-    return result[0]
+    try {
+      const result = await sql`
+        INSERT INTO garden_rows (garden_id, name, length, row_ends)
+        VALUES (${gardenId}, ${name}, ${length}, ${rowEnds})
+        RETURNING id, name, length, row_ends, created_at, updated_at
+      `
+      return result[0]
+    } catch (error) {
+      // If row_ends column doesn't exist, fall back to the original query
+      if (error instanceof Error && error.message.includes('column "row_ends" does not exist')) {
+        const result = await sql`
+          INSERT INTO garden_rows (garden_id, name, length)
+          VALUES (${gardenId}, ${name}, ${length})
+          RETURNING id, name, length, created_at, updated_at
+        `
+        return { ...result[0], row_ends: 0 }
+      }
+      throw error
+    }
   }, "Failed to create row")
 }
 
-export async function updateRow(rowId: number, name: string, length: number) {
+export async function updateRow(rowId: number, name: string, length: number, rowEnds = 0) {
   return executeQuery(async (sql) => {
-    const result = await sql`
-      UPDATE garden_rows
-      SET name = ${name}, length = ${length}, updated_at = NOW()
-      WHERE id = ${rowId}
-      RETURNING id, name, length, created_at, updated_at
-    `
-
-    return result[0] || null
+    try {
+      const result = await sql`
+        UPDATE garden_rows
+        SET name = ${name}, length = ${length}, row_ends = ${rowEnds}, updated_at = NOW()
+        WHERE id = ${rowId}
+        RETURNING id, name, length, row_ends, created_at, updated_at
+      `
+      return result[0] || null
+    } catch (error) {
+      // If row_ends column doesn't exist, fall back to the original query
+      if (error instanceof Error && error.message.includes('column "row_ends" does not exist')) {
+        const result = await sql`
+          UPDATE garden_rows
+          SET name = ${name}, length = ${length}, updated_at = NOW()
+          WHERE id = ${rowId}
+          RETURNING id, name, length, created_at, updated_at
+        `
+        return { ...result[0], row_ends: 0 }
+      }
+      throw error
+    }
   }, "Failed to update row")
 }
 
@@ -263,23 +307,55 @@ export async function deleteRow(rowId: number) {
 // Plant functions
 export async function getAllPlants() {
   return executeQuery(async (sql) => {
-    return await sql`
-      SELECT id, name, spacing, image_url
-      FROM plants
-      ORDER BY name ASC
-    `
+    // Check if quantity column exists
+    try {
+      return await sql`
+        SELECT id, name, spacing, image_url, quantity
+        FROM plants
+        ORDER BY name ASC
+      `
+    } catch (error) {
+      // If quantity column doesn't exist, fall back to the original query
+      if (error instanceof Error && error.message.includes('column "quantity" does not exist')) {
+        console.log("Quantity column doesn't exist, using fallback query")
+        const plants = await sql`
+          SELECT id, name, spacing, image_url
+          FROM plants
+          ORDER BY name ASC
+        `
+        // Add default quantity value
+        return plants.map((plant) => ({
+          ...plant,
+          quantity: 10, // Default quantity
+        }))
+      }
+      throw error
+    }
   }, "Failed to get plants")
 }
 
 export async function getPlantById(plantId: number) {
   return executeQuery(async (sql) => {
-    const plants = await sql`
-      SELECT id, name, spacing, image_url
-      FROM plants
-      WHERE id = ${plantId}
-    `
-
-    return plants[0] || null
+    try {
+      const plants = await sql`
+        SELECT id, name, spacing, image_url, quantity
+        FROM plants
+        WHERE id = ${plantId}
+      `
+      return plants[0] || null
+    } catch (error) {
+      // If quantity column doesn't exist, fall back to the original query
+      if (error instanceof Error && error.message.includes('column "quantity" does not exist')) {
+        const plants = await sql`
+          SELECT id, name, spacing, image_url
+          FROM plants
+          WHERE id = ${plantId}
+        `
+        // Add default quantity value
+        return plants[0] ? { ...plants[0], quantity: 10 } : null
+      }
+      throw error
+    }
   }, "Failed to get plant by ID")
 }
 
@@ -311,18 +387,36 @@ export async function createPlantInstance(rowId: number, plantId: number, positi
 // Optimized function that creates a plant instance and returns all details in a single query
 export async function createPlantInstanceWithDetails(rowId: number, plantId: number, position: number) {
   return executeQuery(async (sql) => {
-    const result = await sql`
-      WITH new_instance AS (
-        INSERT INTO plant_instances (row_id, plant_id, position)
-        VALUES (${rowId}, ${plantId}, ${position})
-        RETURNING id, plant_id, position
-      )
-      SELECT ni.id, ni.plant_id, ni.position, p.name, p.spacing, p.image_url
-      FROM new_instance ni
-      JOIN plants p ON ni.plant_id = p.id
-    `
-
-    return result[0]
+    try {
+      const result = await sql`
+        WITH new_instance AS (
+          INSERT INTO plant_instances (row_id, plant_id, position)
+          VALUES (${rowId}, ${plantId}, ${position})
+          RETURNING id, plant_id, position
+        )
+        SELECT ni.id, ni.plant_id, ni.position, p.name, p.spacing, p.image_url, p.quantity
+        FROM new_instance ni
+        JOIN plants p ON ni.plant_id = p.id
+      `
+      return result[0]
+    } catch (error) {
+      // If quantity column doesn't exist, fall back to the original query
+      if (error instanceof Error && error.message.includes('column "quantity" does not exist')) {
+        const result = await sql`
+          WITH new_instance AS (
+            INSERT INTO plant_instances (row_id, plant_id, position)
+            VALUES (${rowId}, ${plantId}, ${position})
+            RETURNING id, plant_id, position
+          )
+          SELECT ni.id, ni.plant_id, ni.position, p.name, p.spacing, p.image_url
+          FROM new_instance ni
+          JOIN plants p ON ni.plant_id = p.id
+        `
+        // Add default quantity value
+        return { ...result[0], quantity: 10 }
+      }
+      throw error
+    }
   }, "Failed to create plant instance with details")
 }
 
@@ -353,4 +447,43 @@ export async function getSqlFromPool() {
 export const sql = async (strings: TemplateStringsArray, ...values: any[]) => {
   const sqlClient = await getSqlFromPool()
   return sqlClient(strings, ...values)
+}
+
+// Add this function to get plant usage counts
+export async function getPlantUsageCounts() {
+  return executeQuery(async (sql) => {
+    const result = await sql`
+      SELECT plant_id, COUNT(*) as count
+      FROM plant_instances
+      GROUP BY plant_id
+    `
+
+    // Convert to a more usable format
+    const countsMap: Record<number, number> = {}
+    for (const row of result) {
+      countsMap[row.plant_id] = Number.parseInt(row.count)
+    }
+
+    return countsMap
+  }, "Failed to get plant usage counts")
+}
+
+// Function to check if quantity column exists and add it if it doesn't
+export async function ensureQuantityColumn() {
+  return executeQuery(async (sql) => {
+    try {
+      // Check if the column exists
+      await sql`SELECT quantity FROM plants LIMIT 1`
+      console.log("Quantity column already exists")
+      return true
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('column "quantity" does not exist')) {
+        console.log("Adding quantity column to plants table")
+        // Add the column
+        await sql`ALTER TABLE plants ADD COLUMN quantity INTEGER DEFAULT 10 NOT NULL`
+        return true
+      }
+      throw error
+    }
+  }, "Failed to ensure quantity column")
 }
