@@ -1,5 +1,4 @@
 import type { Config } from "tailwindcss"
-const { shadcnPlugin } = require("./lib/shadcn-plugin")
 
 const config = {
   darkMode: ["class"],
@@ -60,41 +59,6 @@ const config = {
         "cadet-gray": "#8aa1b1",
         ebony: "#4a5043",
         sunglow: "#ffcb47",
-
-        // Map these colors to the default Tailwind/shadcn theme variables
-        // border: "var(--border)",
-        // input: "var(--input)",
-        // ring: "var(--ring)",
-        // background: "var(--background)",
-        // foreground: "var(--foreground)",
-        // primary: {
-        //   DEFAULT: "#b9d8c2", // celadon
-        //   foreground: "#4a5043", // ebony
-        // },
-        // secondary: {
-        //   DEFAULT: "#9ac2c9", // light-blue
-        //   foreground: "#4a5043", // ebony
-        // },
-        // destructive: {
-        //   DEFAULT: "hsl(var(--destructive))",
-        //   foreground: "hsl(var(--destructive-foreground))",
-        // },
-        // muted: {
-        //   DEFAULT: "#8aa1b1", // cadet-gray
-        //   foreground: "#ffffff",
-        // },
-        // accent: {
-        //   DEFAULT: "#ffcb47", // sunglow
-        //   foreground: "#4a5043", // ebony
-        // },
-        // popover: {
-        //   DEFAULT: "var(--popover)",
-        //   foreground: "var(--popover-foreground)",
-        // },
-        // card: {
-        //   DEFAULT: "var(--card)",
-        //   foreground: "var(--card-foreground)",
-        // },
       },
       borderRadius: {
         lg: "var(--radius)",
