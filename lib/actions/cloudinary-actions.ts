@@ -22,17 +22,20 @@ export async function uploadImage(formData: FormData) {
     // Use the Cloudinary API directly with fetch
     const url = `https://api.cloudinary.com/v1_1/${process.env.CLOUDINARY_CLOUD_NAME}/image/upload`
 
+    // Create signature for authentication
+    const params = {
+      timestamp: timestamp,
+      public_id: `garden-planner/flowers/${uniqueId}`,
+      upload_preset: 'garden_planner_preset'
+    }
+    
     // Create form data for the upload
-    const uploadFormData = new FormData()
-    uploadFormData.append("file", new Blob([buffer], { type: file.type }))
-    uploadFormData.append("api_key", process.env.CLOUDINARY_API_KEY || "")
-    uploadFormData.append("timestamp", timestamp)
-    uploadFormData.append("public_id", `garden-planner/flowers/${uniqueId}`)
-
-    // For this approach, we need to generate a signature on the server
-    // Since we can't use crypto.createHash, we'll use a pre-signed upload
-    // This requires setting up Cloudinary with unsigned upload presets
-    uploadFormData.append("upload_preset", "garden_planner_unsigned")
+    const formData = new FormData()
+    formData.append("file", new Blob([buffer], { type: file.type }))
+    formData.append("api_key", process.env.CLOUDINARY_API_KEY || "")
+    formData.append("timestamp", params.timestamp)
+    formData.append("public_id", params.public_id)
+    formData.append("upload_preset", params.upload_preset)
 
     const response = await fetch(url, {
       method: "POST",
