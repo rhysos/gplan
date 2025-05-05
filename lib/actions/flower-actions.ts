@@ -160,8 +160,20 @@ export async function updateFlower(id: number, name: string, spacing: number, im
 
 export async function deleteFlower(id: number) {
   try {
+    // First update the quantity (increment) for this plant instance
     await sql`
-      DELETE FROM plants WHERE id = ${id}
+      UPDATE plants 
+      SET quantity = quantity + 1 
+      WHERE id = (
+        SELECT plant_id 
+        FROM plant_instances 
+        WHERE id = ${id}
+      )
+    `
+
+    // Then delete the plant instance
+    await sql`
+      DELETE FROM plant_instances WHERE id = ${id}
     `
 
     revalidatePath("/dashboard")
