@@ -42,21 +42,16 @@ export async function getSession() {
 
 export async function getCurrentUser() {
   try {
-    const timeLabel = `getCurrentUser-${Date.now()}`
-    console.time(timeLabel)
     const session = await getSession()
 
     if (!session) {
-      console.timeEnd(timeLabel)
       return null
     }
 
     const user = await getUserById(session.user_id)
-    console.timeEnd(timeLabel)
     return user
   } catch (error) {
     console.error("Error getting current user:", error)
-    console.timeEnd(timeLabel)
     // Don't throw here, just return null to handle gracefully
     return null
   }

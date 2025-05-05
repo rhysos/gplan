@@ -1,7 +1,10 @@
+
 import { redirect } from "next/navigation"
 import { getAllFlowers, getFlowerUsageCounts } from "@/lib/actions/flower-actions"
 import { getCurrentUser } from "@/lib/auth"
 import FlowerManagement from "@/components/flower-management"
+
+export const dynamic = 'force-dynamic'
 
 export default async function FlowersPage() {
   const user = await getCurrentUser()
