@@ -97,7 +97,7 @@ export function FlowerForm({ open, onOpenChange, onSubmit, isLoading = false, in
                 min="0"
                 value={quantity}
                 onChange={(e) => setQuantity(Number.parseInt(e.target.value) || 0)}
-                onClick={(e) => (e.target as HTMLInputElement).select()}
+                onClick={(e: React.MouseEvent<HTMLInputElement>) => e.currentTarget.select()}
                 placeholder="e.g., 10"
                 required
               />

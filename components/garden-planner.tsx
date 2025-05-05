@@ -1088,7 +1088,7 @@ export default function GardenPlanner({ userId }: { userId: number }) {
                       min="0"
                       value={newRowEnds}
                       onChange={(e) => setNewRowEnds(Number(e.target.value))}
-                      onClick={(e) => (e.target as HTMLInputElement).select()}
+                      onClick={(e: React.MouseEvent<HTMLInputElement>) => e.currentTarget.select()}
                       placeholder="e.g., 10"
                     />
                     <p className="text-xs text-muted-foreground">
