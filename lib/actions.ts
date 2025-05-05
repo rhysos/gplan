@@ -20,11 +20,19 @@ import { revalidatePath } from "next/cache"
 
 // Auth actions
 export async function loginUser(email: string, password: string) {
-  const result = await authLogin(email, password)
-  if (result.success) {
-    revalidatePath("/dashboard")
+  try {
+    const result = await authLogin(email, password)
+    if (result.success) {
+      revalidatePath("/dashboard")
+    }
+    return result
+  } catch (error) {
+    console.error("Login error:", error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "An unexpected error occurred during login",
+    }
   }
-  return result
 }
 
 export async function signupUser(name: string, email: string, password: string) {

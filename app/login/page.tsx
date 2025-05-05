@@ -22,6 +22,7 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [isRetrying, setIsRetrying] = useState(false)
+  const [loginAttempts, setLoginAttempts] = useState(0)
 
   // Check for error parameter in URL
   useEffect(() => {
@@ -39,22 +40,40 @@ export default function LoginPage() {
     e.preventDefault()
     setError(null)
     setIsLoading(true)
+    setLoginAttempts((prev) => prev + 1)
 
     try {
+      console.time("loginUser")
       const result = await loginUser(email, password)
+      console.timeEnd("loginUser")
+
       if (result.success) {
         // Check if there's a redirect URL in the query params
         const redirectTo = searchParams.get("redirect") || "/dashboard"
-        router.push(redirectTo)
-        router.refresh()
+
+        // Show success message
+        setError(null)
+
+        // Use window.location for a hard navigation to ensure the session is recognized
+        window.location.href = redirectTo
       } else {
         setError(result.error || "Failed to login")
       }
     } catch (err) {
+      console.error("Login error:", err)
+
       if (err instanceof Error && (err.message.includes("database") || err.message.includes("Failed to fetch"))) {
-        setError("Database connection error. Please try again later.")
+        if (loginAttempts < 2) {
+          // On first database error, suggest trying again
+          setError("Database connection error. Please try again.")
+        } else {
+          // On subsequent errors, provide more detailed feedback
+          setError(
+            "Persistent database connection issues. Our system might be experiencing temporary problems. Please try again in a few moments.",
+          )
+        }
       } else {
-        setError("An unexpected error occurred")
+        setError("An unexpected error occurred. Please try again.")
       }
     } finally {
       setIsLoading(false)

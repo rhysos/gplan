@@ -5,8 +5,12 @@ import GardenPlanner from "@/components/garden-planner"
 export default async function DashboardPage() {
   const user = await getCurrentUser()
 
+  // Add debug logging
+  console.log("Dashboard page - User:", user ? "User found" : "No user found")
+
   if (!user) {
-    redirect("/login")
+    console.log("No user found, redirecting to login")
+    redirect("/login?error=auth_required")
   }
 
   return (

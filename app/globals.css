@@ -89,6 +89,41 @@
   }
 }
 
+/* Custom scrollbar styles */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: hsl(var(--border));
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted));
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--primary));
+}
+
+/* For Firefox */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--muted)) hsl(var(--border));
+}
+
+/* Cloudinary widget fixes */
+.cloudinary-overlay {
+  z-index: 9999 !important;
+}
+
+.cloudinary-widget {
+  z-index: 10000 !important;
+}
+
 /* Custom animations for garden planner */
 .plant-enter {
   animation: scale-in 0.3s ease-out forwards;

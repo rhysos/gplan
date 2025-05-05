@@ -53,31 +53,35 @@ export function ImageUpload({ onUploadComplete, className = "" }: ImageUploadPro
           )}
         </div>
       ) : (
-        <CldUploadWidget
-          uploadPreset="garden_planner_unsigned"
-          onSuccess={handleUploadSuccess}
-          options={{
-            maxFiles: 1,
-            resourceType: "image",
-            folder: "garden-planner/flowers",
-          }}
-          onOpen={() => setIsUploading(true)}
-          onClose={() => setIsUploading(false)}
-          onError={(error) => {
-            setError(error.message || "Upload failed")
-            setIsUploading(false)
-          }}
-        >
-          {({ open }) => (
-            <div
-              className="border-2 border-dashed border-gray-300 rounded-md p-6 flex flex-col items-center justify-center cursor-pointer hover:border-primary transition-colors"
-              onClick={() => open()}
-            >
-              <Upload className="h-8 w-8 text-gray-400 mb-2" />
-              <p className="text-sm text-gray-500">Click to upload image</p>
-            </div>
-          )}
-        </CldUploadWidget>
+        <div className="w-full">
+          <CldUploadWidget
+            uploadPreset="garden_planner_unsigned"
+            onSuccess={handleUploadSuccess}
+            options={{
+              maxFiles: 1,
+              resourceType: "image",
+              folder: "garden-planner/flowers",
+              clientAllowedFormats: ["jpg", "jpeg", "png", "gif"],
+              sources: ["local", "url", "camera"],
+            }}
+            onOpen={() => setIsUploading(true)}
+            onClose={() => setIsUploading(false)}
+            onError={(error) => {
+              setError(error.message || "Upload failed")
+              setIsUploading(false)
+            }}
+          >
+            {({ open }) => (
+              <div
+                className="border-2 border-dashed border-gray-300 rounded-md p-6 flex flex-col items-center justify-center cursor-pointer hover:border-primary transition-colors"
+                onClick={() => open()}
+              >
+                <Upload className="h-8 w-8 text-gray-400 mb-2" />
+                <p className="text-sm text-gray-500">Click to upload image</p>
+              </div>
+            )}
+          </CldUploadWidget>
+        </div>
       )}
 
       {isUploading && (

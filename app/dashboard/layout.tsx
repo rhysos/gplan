@@ -12,12 +12,16 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode
 }) {
-  // Get the current user instead of requiring auth
+  // Get the current user
   const user = await getCurrentUser()
+
+  // Add debug logging
+  console.log("Dashboard layout - User:", user ? "User found" : "No user found")
 
   // If no user is found, redirect to login
   if (!user) {
-    redirect("/login")
+    console.log("No user found, redirecting to login")
+    redirect("/login?error=auth_required")
   }
 
   return (

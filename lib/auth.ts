@@ -7,8 +7,15 @@ import {
   getSessionBySessionId,
   deleteSession,
   getUserById,
+  warmupDatabaseConnection,
 } from "./db"
 
+// Add a connection warming function that can be called during app initialization
+export async function initializeAuth() {
+  return await warmupDatabaseConnection()
+}
+
+// Make sure the getSession function is correctly retrieving the session
 export async function getSession() {
   const sessionId = cookies().get("session_id")?.value
 
@@ -17,7 +24,13 @@ export async function getSession() {
   }
 
   try {
+    console.time("getSession")
     const session = await getSessionBySessionId(sessionId)
+    console.timeEnd("getSession")
+
+    // Add debug logging
+    console.log("Session retrieved:", session ? "Session found" : "No session found")
+
     return session
   } catch (error) {
     console.error("Error getting session:", error)
@@ -28,16 +41,20 @@ export async function getSession() {
 
 export async function getCurrentUser() {
   try {
+    console.time("getCurrentUser")
     const session = await getSession()
 
     if (!session) {
+      console.timeEnd("getCurrentUser")
       return null
     }
 
     const user = await getUserById(session.user_id)
+    console.timeEnd("getCurrentUser")
     return user
   } catch (error) {
     console.error("Error getting current user:", error)
+    console.timeEnd("getCurrentUser")
     // Don't throw here, just return null to handle gracefully
     return null
   }
@@ -59,22 +76,30 @@ export async function requireAuth() {
   }
 }
 
+// Make sure the login function is correctly setting the cookie
 export async function login(email: string, password: string) {
   try {
+    console.time("login")
+    // Warm up the connection before attempting login
+    await warmupDatabaseConnection()
+
     const user = await getUserByEmail(email)
 
     if (!user) {
+      console.timeEnd("login")
       return { success: false, error: "Invalid email or password" }
     }
 
     const isPasswordValid = verifyPassword(password, user.password_hash)
 
     if (!isPasswordValid) {
+      console.timeEnd("login")
       return { success: false, error: "Invalid email or password" }
     }
 
     const { sessionId, expiresAt } = await createSession(user.id)
 
+    // Set the cookie with proper attributes
     cookies().set("session_id", sessionId, {
       httpOnly: true,
       expires: expiresAt,
@@ -83,15 +108,20 @@ export async function login(email: string, password: string) {
       path: "/",
     })
 
+    console.timeEnd("login")
     return { success: true, user: { id: user.id, name: user.name, email: user.email } }
   } catch (error) {
     console.error("Login error:", error)
+    console.timeEnd("login")
     return { success: false, error: "An error occurred during login. Please try again later." }
   }
 }
 
 export async function signup(name: string, email: string, password: string) {
   try {
+    // Warm up the connection before attempting signup
+    await warmupDatabaseConnection()
+
     const user = await dbCreateUser(name, email, password)
 
     const { sessionId, expiresAt } = await createSession(user.id)

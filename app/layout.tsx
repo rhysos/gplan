@@ -2,6 +2,7 @@ import type React from "react"
 import "@/app/globals.css"
 import { Inter } from "next/font/google"
 import { ThemeProvider } from "@/components/theme-provider"
+import { initializeAuth } from "@/lib/auth"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -10,6 +11,11 @@ export const metadata = {
   description: "Plan your garden with rows and plants",
     generator: 'v0.dev'
 }
+
+// Warm up the database connection when the app loads
+initializeAuth().catch((error) => {
+  console.error("Failed to initialize auth:", error)
+})
 
 export default function RootLayout({
   children,

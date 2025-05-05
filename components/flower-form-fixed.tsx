@@ -9,10 +9,9 @@ import { Label } from "@/components/ui/label"
 import { Slider } from "@/components/ui/slider"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ImageUrlInput } from "@/components/image-url-input"
-import { ImageUpload } from "@/components/image-upload"
+import { FileUpload } from "@/components/file-upload"
 import { CloudinaryImage } from "@/components/cloudinary-image"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
-import { ScrollArea } from "@/components/ui/scroll-area"
 
 interface FlowerFormProps {
   open: boolean
@@ -55,12 +54,14 @@ export function FlowerForm({ open, onOpenChange, onSubmit, isLoading = false, in
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-md max-h-[90vh] overflow-hidden flex flex-col">
+      <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>{initialFlower ? "Edit Flower" : "Add New Flower"}</DialogTitle>
         </DialogHeader>
-        <ScrollArea className="flex-1 pr-4 max-h-[60vh]">
-          <form onSubmit={handleSubmit} className="space-y-6">
+
+        {/* Main content with native scrolling */}
+        <div className="overflow-y-auto max-h-[60vh] pr-2 my-4 custom-scrollbar">
+          <form id="flower-form" onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="flower-name">Flower Name</Label>
               <Input
@@ -112,7 +113,7 @@ export function FlowerForm({ open, onOpenChange, onSubmit, isLoading = false, in
                   <ImageUrlInput onImageUrlChange={setImageUrl} initialUrl={imageUrl} />
                 </TabsContent>
                 <TabsContent value="upload" className="pt-4">
-                  <ImageUpload onUploadComplete={handleImageUpload} />
+                  <FileUpload onUploadComplete={handleImageUpload} />
                 </TabsContent>
               </Tabs>
 
@@ -130,9 +131,10 @@ export function FlowerForm({ open, onOpenChange, onSubmit, isLoading = false, in
               )}
             </div>
           </form>
-        </ScrollArea>
-        <DialogFooter className="pt-4 border-t mt-4 flex-shrink-0">
-          <Button type="button" onClick={handleSubmit} disabled={isLoading || !name || !imageUrl}>
+        </div>
+
+        <DialogFooter className="pt-4 border-t mt-2">
+          <Button type="submit" form="flower-form" disabled={isLoading || !name || !imageUrl}>
             {isLoading ? (initialFlower ? "Updating..." : "Adding...") : initialFlower ? "Update Flower" : "Add Flower"}
           </Button>
         </DialogFooter>

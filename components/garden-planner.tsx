@@ -1,7 +1,8 @@
 "use client"
 
+// Import necessary React hooks and utilities
 import { useState, useEffect, useCallback, useMemo, useRef } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter } from "next/navigation" // Next.js router for navigation
 import {
   Plus,
   Trash2,
@@ -13,17 +14,22 @@ import {
   AlertTriangle,
   ChevronLeft,
   ChevronRight,
-} from "lucide-react"
+  Flower,
+} from "lucide-react" // Import icons from lucide-react library
+
+// Import UI components from shadcn/ui
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Slider } from "@/components/ui/slider"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { useToast } from "@/hooks/use-toast"
-import { CloudinaryImage } from "@/components/cloudinary-image"
+import { useToast } from "@/hooks/use-toast" // Custom hook for displaying toast notifications
+import { CloudinaryImage } from "@/components/cloudinary-image" // Custom component for displaying Cloudinary images
 import { Progress } from "@/components/ui/progress"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+
+// Import server actions for database operations
 import {
   logoutUser,
   getUserGardens,
@@ -42,34 +48,34 @@ import {
 } from "@/lib/actions"
 import { Badge } from "./ui/badge"
 
-// Types
+// TypeScript interfaces to define the shape of our data
+// This helps with type checking and code completion
 interface Plant {
   id: number
   name: string
-  spacing: number
+  spacing: number // Spacing in centimeters
   image_url: string
-  quantity?: number
-  used_count?: number
+  quantity?: number // Optional property for available quantity
+  used_count?: number // Optional property for tracking usage
 }
 
 interface PlantInstance {
   id: number
   plant_id: number
-  position: number
+  position: number // Position in centimeters from the start of the row
   name: string
   spacing: number
   image_url: string | null
-  animationState?: "entering" | "exiting" | "moving-left" | "moving-right" | null
+  animationState?: "entering" | "exiting" | "moving-left" | "moving-right" | null // For animations
 }
 
-// Update the GardenRow interface to include row_ends as a number
 interface GardenRow {
   id: number
   name: string
-  length: number
-  row_ends: number
-  plants?: PlantInstance[]
-  isActive?: boolean
+  length: number // Length in centimeters
+  row_ends: number // Space at the ends of the row in centimeters
+  plants?: PlantInstance[] // Optional array of plants in this row
+  isActive?: boolean // UI state for highlighting active rows
 }
 
 interface Garden {
@@ -77,34 +83,50 @@ interface Garden {
   name: string
 }
 
+// Main component that takes a userId prop
 export default function GardenPlanner({ userId }: { userId: number }) {
+  // Initialize Next.js router for navigation
   const router = useRouter()
+
+  // Initialize toast notifications
   const { toast } = useToast()
-  const [gardens, setGardens] = useState<Garden[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [currentGardenId, setCurrentGardenId] = useState<number | null>(null)
-  const [rows, setRows] = useState<GardenRow[]>([])
-  const [plants, setPlants] = useState<Plant[]>([])
-  const [usageCounts, setUsageCounts] = useState<Record<number, number>>({})
-  const [addingPlantLoading, setAddingPlantLoading] = useState<number | null>(null)
-  const [movingPlant, setMovingPlant] = useState<boolean>(false)
+
+  // State for gardens data and UI
+  const [gardens, setGardens] = useState<Garden[]>([]) // List of user's gardens
+  const [isLoading, setIsLoading] = useState(true) // Loading state for initial data fetch
+  const [currentGardenId, setCurrentGardenId] = useState<number | null>(null) // Currently selected garden
+
+  // State for rows and plants
+  const [rows, setRows] = useState<GardenRow[]>([]) // Rows in the current garden
+  const [plants, setPlants] = useState<Plant[]>([]) // Available plants/flowers
+  const [usageCounts, setUsageCounts] = useState<Record<number, number>>({}) // Track plant usage by ID
+
+  // UI state for plant operations
+  const [addingPlantLoading, setAddingPlantLoading] = useState<number | null>(null) // Track which row is adding a plant
+  const [movingPlant, setMovingPlant] = useState<boolean>(false) // Track if a plant is being moved
+
+  // Ref to store animation timeouts for cleanup
   const animationTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-  const [isAddingGarden, setIsAddingGarden] = useState(false)
-  const [newGardenName, setNewGardenName] = useState("")
-  const [editingGarden, setEditingGarden] = useState<Garden | null>(null)
+  // State for garden management UI
+  const [isAddingGarden, setIsAddingGarden] = useState(false) // Control add garden dialog
+  const [newGardenName, setNewGardenName] = useState("") // New garden name input
+  const [editingGarden, setEditingGarden] = useState<Garden | null>(null) // Garden being edited
 
-  const [isAddingRow, setIsAddingRow] = useState(false)
-  const [newRowName, setNewRowName] = useState("")
-  const [newRowLength, setNewRowLength] = useState(240) // 2.4 meters default
-  const [newRowEnds, setNewRowEnds] = useState(0) // Default to 0
-  const [editingRow, setEditingRow] = useState<GardenRow | null>(null)
+  // State for row management UI
+  const [isAddingRow, setIsAddingRow] = useState(false) // Control add row dialog
+  const [newRowName, setNewRowName] = useState("") // New row name input
+  const [newRowLength, setNewRowLength] = useState(240) // Default 2.4 meters (240 cm)
+  const [newRowEnds, setNewRowEnds] = useState(0) // Default 0 cm for row ends
+  const [editingRow, setEditingRow] = useState<GardenRow | null>(null) // Row being edited
 
-  const [selectedPlant, setSelectedPlant] = useState<number | null>(null)
-  const [addingPlantToRowId, setAddingPlantToRowId] = useState<number | null>(null)
-  const [isAddPlantDialogOpen, setIsAddPlantDialogOpen] = useState(false)
+  // State for plant management UI
+  const [selectedPlant, setSelectedPlant] = useState<number | null>(null) // Currently selected plant ID
+  const [addingPlantToRowId, setAddingPlantToRowId] = useState<number | null>(null) // Row ID to add plant to
+  const [isAddPlantDialogOpen, setIsAddPlantDialogOpen] = useState(false) // Control add plant dialog
 
   // Clean up any animation timeouts when component unmounts
+  // This prevents memory leaks
   useEffect(() => {
     return () => {
       if (animationTimeoutRef.current) {
@@ -113,23 +135,28 @@ export default function GardenPlanner({ userId }: { userId: number }) {
     }
   }, [])
 
-  // Load user's gardens
+  // Load user's gardens when component mounts
+  // The dependency array [userId, toast] means this effect runs when userId or toast changes
   useEffect(() => {
     const loadGardens = async () => {
       try {
+        // Fetch gardens from the server
         const userGardens = await getUserGardens(userId)
         setGardens(userGardens)
 
+        // If there are gardens, select the first one
         if (userGardens.length > 0) {
           setCurrentGardenId(userGardens[0].id)
         }
       } catch (error) {
+        // Show error toast if fetching fails
         toast({
           title: "Error",
           description: "Failed to load your gardens",
           variant: "destructive",
         })
       } finally {
+        // Set loading to false regardless of success or failure
         setIsLoading(false)
       }
     }
@@ -141,6 +168,7 @@ export default function GardenPlanner({ userId }: { userId: number }) {
   useEffect(() => {
     const loadPlantsAndCounts = async () => {
       try {
+        // Fetch plants and usage counts in parallel for better performance
         const [allPlants, counts] = await Promise.all([getPlants(), getFlowerUsageCounts()])
 
         // Combine plants with usage counts and ensure quantity is set
@@ -165,13 +193,15 @@ export default function GardenPlanner({ userId }: { userId: number }) {
   }, [toast])
 
   // Load rows when garden changes
+  // useCallback memoizes this function to prevent unnecessary re-renders
   const loadRows = useCallback(async () => {
     if (!currentGardenId) return
 
     try {
+      // Fetch rows for the current garden
       const gardenRows = await getGardenRows(currentGardenId)
 
-      // Load plants for each row
+      // Load plants for each row in parallel
       const rowsWithPlants = await Promise.all(
         gardenRows.map(async (row) => {
           try {
@@ -197,23 +227,32 @@ export default function GardenPlanner({ userId }: { userId: number }) {
         variant: "destructive",
       })
     }
-  }, [currentGardenId, toast])
+  }, [currentGardenId, toast]) // Dependencies for useCallback
 
+  // Call loadRows when currentGardenId changes
   useEffect(() => {
     loadRows()
   }, [currentGardenId, loadRows])
 
-  // Garden Management
+  // Garden Management Functions
+
+  // Add a new garden
   const addGarden = async () => {
-    if (newGardenName.trim() === "") return
+    if (newGardenName.trim() === "") return // Validate input
 
     try {
+      // Create garden in the database
       const newGarden = await createUserGarden(userId, newGardenName)
+
+      // Update local state
       setGardens([...gardens, newGarden])
       setCurrentGardenId(newGarden.id)
+
+      // Reset form
       setNewGardenName("")
       setIsAddingGarden(false)
 
+      // Show success toast
       toast({
         title: "Garden created",
         description: `${newGarden.name} has been created successfully`,
@@ -227,7 +266,9 @@ export default function GardenPlanner({ userId }: { userId: number }) {
     }
   }
 
+  // Delete a garden
   const deleteGarden = async (gardenId: number) => {
+    // Prevent deleting the last garden
     if (gardens.length <= 1) {
       toast({
         title: "Cannot delete",
@@ -238,7 +279,10 @@ export default function GardenPlanner({ userId }: { userId: number }) {
     }
 
     try {
+      // Delete from database
       await deleteUserGarden(gardenId, userId)
+
+      // Update local state
       const newGardens = gardens.filter((g) => g.id !== gardenId)
       setGardens(newGardens)
 
@@ -260,15 +304,20 @@ export default function GardenPlanner({ userId }: { userId: number }) {
     }
   }
 
+  // Start editing a garden (open edit dialog)
   const startEditGarden = (garden: Garden) => {
-    setEditingGarden({ ...garden })
+    setEditingGarden({ ...garden }) // Create a copy to avoid mutating the original
   }
 
+  // Save garden edits
   const saveGardenEdit = async () => {
     if (!editingGarden) return
 
     try {
+      // Update in database
       const updatedGarden = await updateUserGarden(editingGarden.id, userId, editingGarden.name)
+
+      // Update local state
       setGardens(gardens.map((g) => (g.id === editingGarden.id ? updatedGarden : g)))
       setEditingGarden(null)
 
@@ -285,13 +334,20 @@ export default function GardenPlanner({ userId }: { userId: number }) {
     }
   }
 
-  // Row Management
+  // Row Management Functions
+
+  // Add a new row
   const addRow = async () => {
-    if (newRowName.trim() === "" || !currentGardenId) return
+    if (newRowName.trim() === "" || !currentGardenId) return // Validate input
 
     try {
+      // Create row in database
       const newRow = await createGardenRow(currentGardenId, newRowName, newRowLength, newRowEnds)
+
+      // Update local state
       setRows([...rows, { ...newRow, plants: [] }])
+
+      // Reset form
       setNewRowName("")
       setNewRowLength(240)
       setNewRowEnds(0)
@@ -310,9 +366,13 @@ export default function GardenPlanner({ userId }: { userId: number }) {
     }
   }
 
+  // Delete a row
   const deleteRow = async (rowId: number) => {
     try {
+      // Delete from database
       await deleteGardenRow(rowId)
+
+      // Update local state
       setRows(rows.filter((row) => row.id !== rowId))
 
       toast({
@@ -328,15 +388,20 @@ export default function GardenPlanner({ userId }: { userId: number }) {
     }
   }
 
+  // Start editing a row (open edit dialog)
   const startEditRow = (row: GardenRow) => {
-    setEditingRow({ ...row })
+    setEditingRow({ ...row }) // Create a copy to avoid mutating the original
   }
 
+  // Save row edits
   const saveRowEdit = async () => {
     if (!editingRow) return
 
     try {
+      // Update in database
       const updatedRow = await updateGardenRow(editingRow.id, editingRow.name, editingRow.length, editingRow.row_ends)
+
+      // Update local state, preserving the plants array
       setRows(rows.map((row) => (row.id === editingRow.id ? { ...updatedRow, plants: row.plants } : row)))
       setEditingRow(null)
 
@@ -353,10 +418,13 @@ export default function GardenPlanner({ userId }: { userId: number }) {
     }
   }
 
-  // Plant Management
-  const addPlantToRow = async (rowId: number) => {
-    if (!selectedPlant) return
+  // Plant Management Functions
 
+  // Add a plant to a row
+  const addPlantToRow = async (rowId: number) => {
+    if (!selectedPlant) return // Validate selected plant
+
+    // Find the row and plant
     const row = rows.find((r) => r.id === rowId)
     if (!row) return
 
@@ -400,6 +468,7 @@ export default function GardenPlanner({ userId }: { userId: number }) {
     }
 
     try {
+      // Set loading state
       setAddingPlantLoading(rowId)
 
       // Highlight the active row
@@ -410,7 +479,7 @@ export default function GardenPlanner({ userId }: { userId: number }) {
         })),
       )
 
-      // Optimistically update the UI with animation state
+      // Create an optimistic plant instance for immediate UI update
       const optimisticPlantInstance: PlantInstance = {
         id: -1, // Temporary ID
         plant_id: selectedPlant,
@@ -418,10 +487,10 @@ export default function GardenPlanner({ userId }: { userId: number }) {
         name: plant.name,
         spacing: plant.spacing,
         image_url: plant.image_url,
-        animationState: "entering",
+        animationState: "entering", // For animation
       }
 
-      // Update the UI immediately
+      // Update the UI immediately with optimistic data
       setRows(
         rows.map((r) => {
           if (r.id === rowId) {
@@ -453,7 +522,7 @@ export default function GardenPlanner({ userId }: { userId: number }) {
         }),
       )
 
-      // Close the dialog immediately
+      // Close the dialog immediately for better UX
       setIsAddPlantDialogOpen(false)
       setSelectedPlant(null)
 
@@ -538,6 +607,7 @@ export default function GardenPlanner({ userId }: { userId: number }) {
     }
   }
 
+  // Remove a plant from a row
   const removePlant = async (rowId: number, plantInstanceId: number, plantId: number) => {
     try {
       // Mark the plant as exiting for animation
@@ -731,7 +801,6 @@ export default function GardenPlanner({ userId }: { userId: number }) {
       toast({
         title: "Error",
         description: `Failed to move plant ${direction}`,
-        variant: "destructive",
       })
     } finally {
       setMovingPlant(false)
@@ -742,8 +811,8 @@ export default function GardenPlanner({ userId }: { userId: number }) {
   const handleLogout = async () => {
     try {
       await logoutUser()
-      router.push("/login")
-      router.refresh()
+      router.push("/login") // Navigate to login page
+      router.refresh() // Refresh the page to clear any cached data
     } catch (error) {
       toast({
         title: "Error",
@@ -754,6 +823,7 @@ export default function GardenPlanner({ userId }: { userId: number }) {
   }
 
   // Calculate used space in a row, including row_ends on both sides and using the larger spacing between plants
+  // useCallback memoizes this function to prevent unnecessary recalculations
   const calculateUsedSpace = useCallback((row: GardenRow, newPlant?: Plant): number => {
     // Start with row_ends on both sides
     let totalSpace = 2 * (row.row_ends || 0)
@@ -820,11 +890,12 @@ export default function GardenPlanner({ userId }: { userId: number }) {
     [calculateUsedSpace],
   )
 
-  // Memoize the current garden name
+  // Memoize the current garden name to prevent unnecessary recalculations
   const currentGardenName = useMemo(() => {
     return gardens.find((g) => g.id === currentGardenId)?.name || "Select Garden"
   }, [gardens, currentGardenId])
 
+  // Show loading spinner while data is being fetched
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -836,11 +907,12 @@ export default function GardenPlanner({ userId }: { userId: number }) {
     )
   }
 
+  // Main component render
   return (
-    <div className="container mx-auto py-8 px-4">
+    <div className="container mx-auto py-4 px-2 md:px-4">
       {/* Header with Garden Selector */}
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold">Garden Planner</h1>
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="text-2xl font-bold">Garden Planner</h1>
 
         <div className="flex items-center gap-2">
           {gardens.length > 0 && (
@@ -886,6 +958,7 @@ export default function GardenPlanner({ userId }: { userId: number }) {
             </DropdownMenu>
           )}
 
+          {/* Logout button */}
           <Button variant="ghost" size="icon" onClick={handleLogout} title="Logout" style={{ color: "var(--ebony)" }}>
             <LogOut size={18} />
           </Button>
@@ -917,7 +990,7 @@ export default function GardenPlanner({ userId }: { userId: number }) {
         </DialogContent>
       </Dialog>
 
-      {/* Edit Garden Dialog */}
+      {/* Edit Garden Dialog - Only shown when editingGarden is not null */}
       {editingGarden && (
         <Dialog open={!!editingGarden} onOpenChange={(open) => !open && setEditingGarden(null)}>
           <DialogContent>
@@ -943,7 +1016,7 @@ export default function GardenPlanner({ userId }: { userId: number }) {
         </Dialog>
       )}
 
-      {/* No Gardens State */}
+      {/* No Gardens State - Show when user has no gardens */}
       {gardens.length === 0 ? (
         <div className="text-center py-12 border-2 border-dashed rounded-lg" style={{ borderColor: "var(--celadon)" }}>
           <p className="text-muted-foreground mb-4">You don't have any gardens yet.</p>
@@ -957,13 +1030,14 @@ export default function GardenPlanner({ userId }: { userId: number }) {
         </div>
       ) : (
         <>
-          {/* Add Row Button */}
-          <div className="mb-8">
+          {/* Add Row Button - Only shown when user has at least one garden */}
+          <div className="mb-4">
             <Dialog open={isAddingRow} onOpenChange={setIsAddingRow}>
               <DialogTrigger asChild>
                 <Button
                   className="flex items-center gap-2"
-                  style={{ backgroundColor: "var(--light-blue)", color: 'var(--ebony)" }}, color: "var(--ebony)' }}
+                  style={{ backgroundColor: "var(--light-blue)", color: "var(--ebony)" }}
+                  size="sm"
                 >
                   <Plus size={16} />
                   Add Garden Row
@@ -1024,8 +1098,8 @@ export default function GardenPlanner({ userId }: { userId: number }) {
             </Dialog>
           </div>
 
-          {/* Garden Rows */}
-          <div className="space-y-8">
+          {/* Garden Rows - Display all rows in the current garden */}
+          <div className="space-y-4">
             {rows.length === 0 ? (
               <div
                 className="text-center py-12 border-2 border-dashed rounded-lg"
@@ -1036,361 +1110,396 @@ export default function GardenPlanner({ userId }: { userId: number }) {
                 </p>
               </div>
             ) : (
-              rows.map((row) => {
-                const usedSpace = calculateUsedSpace(row)
-                const usedPercentage = calculateUsedPercentage(row)
-                const availableSpace = row.length - usedSpace
+              <div className="space-y-4 w-full">
+                {rows.map((row) => {
+                  // Calculate space usage for this row
+                  const usedSpace = calculateUsedSpace(row)
+                  const usedPercentage = calculateUsedPercentage(row)
 
-                return (
-                  <div
-                    key={row.id}
-                    className={`border rounded-lg p-4 transition-all duration-300 ${
-                      row.isActive ? "row-highlight" : ""
-                    }`}
-                    style={{ borderColor: row.isActive ? "var(--sunglow)" : "var(--cadet-gray)" }}
-                  >
-                    {/* Row Header */}
-                    <div className="flex flex-col gap-2 mb-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h2 className="text-xl font-semibold">{row.name}</h2>
-                        </div>
-                        <div className="flex gap-2">
-                          <Dialog
-                            open={isAddPlantDialogOpen && addingPlantToRowId === row.id}
-                            onOpenChange={(open) => {
-                              setIsAddPlantDialogOpen(open)
-                              if (!open) setAddingPlantToRowId(null)
-                            }}
-                          >
-                            <DialogTrigger asChild>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => {
-                                  setAddingPlantToRowId(row.id)
-                                  setIsAddPlantDialogOpen(true)
-                                }}
-                                disabled={addingPlantLoading === row.id}
-                                style={{ backgroundColor: "var(--celadon)", color: "var(--ebony)" }}
-                              >
-                                {addingPlantLoading === row.id ? (
-                                  <>
-                                    <div className="h-4 w-4 mr-1 animate-spin rounded-full border-2 border-t-transparent" />
-                                    Adding...
-                                  </>
-                                ) : (
-                                  <>
-                                    <Plus size={16} className="mr-1" /> Add Flower
-                                  </>
-                                )}
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent>
-                              <DialogHeader>
-                                <DialogTitle>Add Flower to {row.name}</DialogTitle>
-                              </DialogHeader>
-                              <div className="py-2">
-                                <div className="space-y-1">
-                                  <Label htmlFor="plant-select">Select a flower to add:</Label>
-                                  <div className="mt-1 max-h-[300px] overflow-y-auto border rounded-md">
-                                    {plants.map((plant) => {
-                                      const quantity = plant.quantity || 10
-                                      const usedCount = usageCounts[plant.id] || 0
-                                      const available = quantity - usedCount
-                                      const canFit = wouldPlantFit(row, plant)
-                                      const isDisabled = available <= 0 || !canFit
-
-                                      return (
-                                        <div
-                                          key={plant.id}
-                                          onClick={() => {
-                                            if (!isDisabled && !addingPlantLoading) {
-                                              setSelectedPlant(plant.id)
-                                              // Automatically add the plant when selected
-                                              setTimeout(() => {
-                                                addPlantToRow(row.id)
-                                              }, 100)
-                                            }
-                                          }}
-                                          className={`flex items-center gap-2 p-2 hover:bg-muted/20 cursor-pointer border-b last:border-b-0 transition-colors ${
-                                            isDisabled ? "opacity-50 cursor-not-allowed" : ""
-                                          }`}
-                                        >
-                                          <div className="w-10 h-10 rounded overflow-hidden flex-shrink-0">
-                                            <CloudinaryImage
-                                              src={plant.image_url}
-                                              alt={plant.name}
-                                              width={40}
-                                              height={40}
-                                              className="w-full h-full object-cover"
-                                            />
-                                          </div>
-                                          <div className="flex-1 overflow-hidden">
-                                            <div className="flex justify-between items-center">
-                                              <span className="font-medium truncate">{plant.name}</span>
-                                              <Badge
-                                                variant={available > 0 ? "outline" : "destructive"}
-                                                className="ml-2"
-                                              >
-                                                {available} left
-                                              </Badge>
-                                            </div>
-                                            <div className="text-xs text-muted-foreground">
-                                              Spacing: {plant.spacing} cm
-                                            </div>
-                                          </div>
-                                          {!canFit && (
-                                            <div className="text-amber-500 flex items-center text-xs">
-                                              <AlertTriangle className="h-3 w-3 mr-1" />
-                                              Won't fit
-                                            </div>
-                                          )}
-                                        </div>
-                                      )
-                                    })}
-                                  </div>
-                                </div>
-                                {addingPlantLoading && (
-                                  <div className="flex items-center justify-center mt-4">
-                                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-t-transparent mr-2" />
-                                    <span>Adding flower...</span>
-                                  </div>
-                                )}
-                              </div>
-                            </DialogContent>
-                          </Dialog>
-
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => startEditRow(row)}
-                            style={{ borderColor: "var(--light-blue)", color: "var(--ebony)" }}
-                          >
-                            <Edit size={16} className="mr-1" /> Edit
-                          </Button>
-
-                          <Button variant="destructive" size="sm" onClick={() => deleteRow(row.id)}>
-                            <Trash2 size={16} className="mr-1" /> Delete
-                          </Button>
-                        </div>
-                      </div>
-
-                      {/* Detailed Row Information */}
-                      <div
-                        className="grid grid-cols-4 gap-2 text-sm p-2 rounded-md"
-                        style={{ backgroundColor: "rgba(138, 161, 177, 0.1)" }}
-                      >
-                        <div>
-                          <span className="font-medium">Length:</span> {row.length} cm
-                        </div>
-                        <div>
-                          <span className="font-medium">Row ends:</span> {row.row_ends} cm
-                        </div>
-                        <div>
-                          <span className="font-medium">Plants:</span> {(row.plants || []).length}
-                        </div>
-                        <div>
-                          <span className="font-medium">Space used:</span> {calculateUsedSpace(row)} cm
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Remove the old text that showed this information */}
-                    {/* <p className="text-sm text-muted-foreground">
-                      {row.length} cm ({(row.length / 100).toFixed(1)} m) • {usedSpace} cm used •{availableSpace} cm
-                      available • Row ends: {row.row_ends} cm
-                    </p> */}
-
-                    {/* Progress Bar */}
-                    <div className="mb-4">
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <div className="w-full">
-                              <Progress
-                                value={usedPercentage}
-                                className={usedPercentage > 90 ? "bg-opacity-20" : ""}
-                                indicatorClassName={usedPercentage > 90 ? "bg-sunglow" : ""}
-                                style={{
-                                  backgroundColor:
-                                    usedPercentage > 90 ? "rgba(255, 203, 71, 0.2)" : "rgba(154, 194, 201, 0.2)",
-                                }}
-                              />
-                            </div>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>{usedPercentage}% of row space used</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </div>
-
-                    {/* Row Visualization */}
+                  return (
                     <div
-                      className="relative h-48 rounded-lg overflow-x-auto"
-                      style={{ backgroundColor: "rgba(185, 216, 194, 0.1)" }}
+                      key={row.id}
+                      className={`border rounded-lg p-3 transition-all duration-300 ${
+                        row.isActive ? "row-highlight" : ""
+                      }`}
+                      style={{ borderColor: row.isActive ? "var(--sunglow)" : "var(--cadet-gray)" }}
                     >
-                      <div
-                        className="absolute top-0 left-0 h-full flex items-center"
-                        style={{ width: `${row.length * 3}px`, minWidth: "100%" }}
-                      >
-                        {/* Ruler markings */}
-                        {Array.from({ length: Math.ceil(row.length / 100) + 1 }).map((_, i) => (
-                          <div key={i} className="absolute h-full" style={{ left: `${i * 300}px` }}>
-                            <div
-                              className="absolute bottom-0 h-4 border-l"
-                              style={{ borderColor: "var(--cadet-gray)" }}
-                            ></div>
-                            <div
-                              className="absolute bottom-0 text-xs"
-                              style={{ left: "4px", color: "var(--cadet-gray)" }}
-                            >
-                              {i}m
-                            </div>
+                      {/* Row Header - Contains row name and action buttons */}
+                      <div className="flex flex-col gap-1 mb-2">
+                        <div className="flex items-center justify-between">
+                          <h2 className="text-lg font-semibold">{row.name}</h2>
+                          <div className="flex gap-1">
+                            {/* Add Flower Button */}
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-7 w-7"
+                                    onClick={() => {
+                                      setAddingPlantToRowId(row.id)
+                                      setIsAddPlantDialogOpen(true)
+                                    }}
+                                    disabled={addingPlantLoading === row.id}
+                                  >
+                                    {addingPlantLoading === row.id ? (
+                                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-t-transparent" />
+                                    ) : (
+                                      <Flower size={16} />
+                                    )}
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>Add Flower</TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+
+                            {/* Edit Row Button */}
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-7 w-7"
+                                    onClick={() => startEditRow(row)}
+                                  >
+                                    <Edit size={16} />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>Edit Row</TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+
+                            {/* Delete Row Button */}
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-7 w-7 text-destructive"
+                                    onClick={() => deleteRow(row.id)}
+                                  >
+                                    <Trash2 size={16} />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>Delete Row</TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
                           </div>
-                        ))}
+                        </div>
 
-                        {/* Row ends visualization */}
-                        {row.row_ends > 0 && (
-                          <>
-                            {/* Left end */}
-                            <div
-                              className="absolute top-2 bottom-6 border border-dashed"
-                              style={{
-                                left: 0,
-                                width: `${row.row_ends * 3}px`,
-                                backgroundColor: "rgba(138, 161, 177, 0.2)",
-                                borderColor: "var(--cadet-gray)",
-                              }}
-                            >
-                              <div className="h-full flex items-center justify-center">
-                                <span className="text-xs rotate-90" style={{ color: "var(--cadet-gray)" }}>
-                                  Row end
-                                </span>
+                        {/* Detailed Row Information - Shows length, row ends, plant count, and used space */}
+                        <div
+                          className="grid grid-cols-4 gap-1 text-xs p-1 rounded-md"
+                          style={{ backgroundColor: "rgba(138, 161, 177, 0.1)" }}
+                        >
+                          <div>
+                            <span className="font-medium">Length:</span> {row.length} cm
+                          </div>
+                          <div>
+                            <span className="font-medium">Row ends:</span> {row.row_ends} cm
+                          </div>
+                          <div>
+                            <span className="font-medium">Plants:</span> {(row.plants || []).length}
+                          </div>
+                          <div>
+                            <span className="font-medium">Used:</span> {usedSpace} cm
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Progress Bar - Shows percentage of row space used */}
+                      <div className="mb-2">
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div className="w-full">
+                                <Progress
+                                  value={usedPercentage}
+                                  className={usedPercentage > 90 ? "bg-opacity-20" : ""}
+                                  indicatorClassName={usedPercentage > 90 ? "bg-sunglow" : ""}
+                                  style={{
+                                    backgroundColor:
+                                      usedPercentage > 90 ? "rgba(255, 203, 71, 0.2)" : "rgba(154, 194, 201, 0.2)",
+                                  }}
+                                />
                               </div>
-                            </div>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>{usedPercentage}% of row space used</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
 
-                            {/* Right end */}
-                            <div
-                              className="absolute top-2 bottom-6 border border-dashed"
-                              style={{
-                                right: 0,
-                                width: `${row.row_ends * 3}px`,
-                                backgroundColor: "rgba(138, 161, 177, 0.2)",
-                                borderColor: "var(--cadet-gray)",
-                              }}
-                            >
-                              <div className="h-full flex items-center justify-center">
-                                <span className="text-xs rotate-90" style={{ color: "var(--cadet-gray)" }}>
-                                  Row end
-                                </span>
-                              </div>
-                            </div>
-                          </>
-                        )}
-
-                        {/* Plants */}
-                        {(row.plants || [])
-                          .filter((plantInstance) => plantInstance && typeof plantInstance === "object")
-                          .sort((a, b) => a.position - b.position)
-                          .map((plantInstance, index, sortedPlants) => {
-                            const isFirst = index === 0
-                            const isLast = index === sortedPlants.length - 1
-
-                            // Determine animation class based on animation state
-                            let animationClass = ""
-                            if (plantInstance.animationState === "entering") animationClass = "plant-enter"
-                            if (plantInstance.animationState === "exiting") animationClass = "plant-exit"
-                            if (plantInstance.animationState === "moving-left") animationClass = "plant-move-left"
-                            if (plantInstance.animationState === "moving-right") animationClass = "plant-move-right"
-
-                            return (
+                      {/* Row Visualization - Visual representation of the row with plants */}
+                      <div
+                        className="relative h-36 rounded-lg overflow-x-auto"
+                        style={{ backgroundColor: "rgba(185, 216, 194, 0.1)" }}
+                      >
+                        <div
+                          className="absolute top-0 left-0 h-full flex items-center"
+                          style={{ width: `${row.length * 3}px`, minWidth: "100%" }}
+                        >
+                          {/* Ruler markings - Show meter markers */}
+                          {Array.from({ length: Math.ceil(row.length / 100) + 1 }).map((_, i) => (
+                            <div key={i} className="absolute h-full" style={{ left: `${i * 300}px` }}>
                               <div
-                                key={plantInstance.id}
-                                className="absolute top-2 bottom-6 group"
+                                className="absolute bottom-0 h-4 border-l"
+                                style={{ borderColor: "var(--cadet-gray)" }}
+                              ></div>
+                              <div
+                                className="absolute bottom-0 text-xs"
+                                style={{ left: "4px", color: "var(--cadet-gray)" }}
+                              >
+                                {i}m
+                              </div>
+                            </div>
+                          ))}
+
+                          {/* Row ends visualization - Show space at the ends of the row */}
+                          {row.row_ends > 0 && (
+                            <>
+                              {/* Left end */}
+                              <div
+                                className="absolute top-2 bottom-6 border border-dashed"
                                 style={{
-                                  left: `${plantInstance.position * 3}px`,
-                                  width: `${(plantInstance.spacing || 0) * 3}px`,
+                                  left: 0,
+                                  width: `${row.row_ends * 3}px`,
+                                  backgroundColor: "rgba(138, 161, 177, 0.2)",
+                                  borderColor: "var(--cadet-gray)",
                                 }}
                               >
+                                <div className="h-full flex items-center justify-center">
+                                  <span className="text-xs rotate-90" style={{ color: "var(--cadet-gray)" }}>
+                                    Row end
+                                  </span>
+                                </div>
+                              </div>
+
+                              {/* Right end */}
+                              <div
+                                className="absolute top-2 bottom-6 border border-dashed"
+                                style={{
+                                  right: 0,
+                                  width: `${row.row_ends * 3}px`,
+                                  backgroundColor: "rgba(138, 161, 177, 0.2)",
+                                  borderColor: "var(--cadet-gray)",
+                                }}
+                              >
+                                <div className="h-full flex items-center justify-center">
+                                  <span className="text-xs rotate-90" style={{ color: "var(--cadet-gray)" }}>
+                                    Row end
+                                  </span>
+                                </div>
+                              </div>
+                            </>
+                          )}
+
+                          {/* Plants - Display each plant in the row */}
+                          {(row.plants || [])
+                            .filter((plantInstance) => plantInstance && typeof plantInstance === "object")
+                            .sort((a, b) => a.position - b.position)
+                            .map((plantInstance, index, sortedPlants) => {
+                              const isFirst = index === 0
+                              const isLast = index === sortedPlants.length - 1
+
+                              // Determine animation class based on animation state
+                              let animationClass = ""
+                              if (plantInstance.animationState === "entering") animationClass = "plant-enter"
+                              if (plantInstance.animationState === "exiting") animationClass = "plant-exit"
+                              if (plantInstance.animationState === "moving-left") animationClass = "plant-move-left"
+                              if (plantInstance.animationState === "moving-right") animationClass = "plant-move-right"
+
+                              return (
                                 <div
-                                  className={`h-full flex flex-col relative bg-white rounded-md overflow-hidden border shadow-sm transition-all duration-200 hover:shadow-md ${animationClass}`}
-                                  style={{ borderColor: "var(--cadet-gray)" }}
+                                  key={plantInstance.id}
+                                  className="absolute top-2 bottom-6 group"
+                                  style={{
+                                    left: `${plantInstance.position * 3}px`,
+                                    width: `${(plantInstance.spacing || 0) * 3}px`,
+                                  }}
                                 >
-                                  {/* Larger image */}
-                                  <div className="flex-1 relative overflow-hidden flex items-center justify-center">
-                                    <CloudinaryImage
-                                      src={plantInstance.image_url || "/placeholder.svg?height=80&width=80"}
-                                      alt={plantInstance.name || "Flower"}
-                                      width={120}
-                                      height={120}
-                                      objectFit="cover"
-                                      className="w-full h-full object-cover"
-                                    />
+                                  <div
+                                    className={`h-full flex flex-col relative bg-white rounded-md overflow-hidden border shadow-sm transition-all duration-200 hover:shadow-md ${animationClass}`}
+                                    style={{ borderColor: "var(--cadet-gray)" }}
+                                  >
+                                    {/* Full height image */}
+                                    <div className="relative w-full h-full">
+                                      <CloudinaryImage
+                                        src={plantInstance.image_url || "/placeholder.svg?height=80&width=80"}
+                                        alt={plantInstance.name || "Flower"}
+                                        width={100}
+                                        height={100}
+                                        objectFit="cover"
+                                        className="w-full h-full object-cover object-center"
+                                      />
 
-                                    {/* Hover actions overlay */}
-                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                                      {/* Move left button */}
-                                      <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className={`h-8 w-8 rounded-full bg-white/80 ${isFirst ? "opacity-50 cursor-not-allowed" : ""}`}
-                                        onClick={() => !isFirst && !movingPlant && movePlant(row.id, index, "left")}
-                                        disabled={isFirst || movingPlant}
-                                        style={{ color: "var(--ebony)" }}
-                                      >
-                                        <ChevronLeft className="h-4 w-4" />
-                                      </Button>
+                                      {/* Name overlay - Shows plant name at the bottom of the image */}
+                                      <div className="absolute bottom-0 left-0 right-0 bg-black/40 p-1 text-center">
+                                        <p className="text-xs truncate text-white">
+                                          {plantInstance.name || "Unknown Flower"}
+                                        </p>
+                                      </div>
 
-                                      {/* Delete button */}
-                                      <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-8 w-8 rounded-full bg-white/80 text-red-600 hover:bg-red-100"
-                                        onClick={() => removePlant(row.id, plantInstance.id, plantInstance.plant_id)}
-                                      >
-                                        <Trash2 className="h-4 w-4" />
-                                      </Button>
+                                      {/* Hover actions overlay - Shows buttons when hovering over a plant */}
+                                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1">
+                                        {/* Move left button */}
+                                        <Button
+                                          variant="ghost"
+                                          size="icon"
+                                          className={`h-6 w-6 rounded-full bg-white/80 ${isFirst ? "opacity-50 cursor-not-allowed" : ""}`}
+                                          onClick={() => !isFirst && !movingPlant && movePlant(row.id, index, "left")}
+                                          disabled={isFirst || movingPlant}
+                                          style={{ color: "var(--ebony)" }}
+                                        >
+                                          <ChevronLeft className="h-3 w-3" />
+                                        </Button>
 
-                                      {/* Move right button */}
-                                      <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className={`h-8 w-8 rounded-full bg-white/80 ${isLast ? "opacity-50 cursor-not-allowed" : ""}`}
-                                        onClick={() => !isLast && !movingPlant && movePlant(row.id, index, "right")}
-                                        disabled={isLast || movingPlant}
-                                        style={{ color: "var(--ebony)" }}
-                                      >
-                                        <ChevronRight className="h-4 w-4" />
-                                      </Button>
+                                        {/* Delete button */}
+                                        <Button
+                                          variant="ghost"
+                                          size="icon"
+                                          className="h-6 w-6 rounded-full bg-white/80 text-red-600 hover:bg-red-100"
+                                          onClick={() => removePlant(row.id, plantInstance.id, plantInstance.plant_id)}
+                                        >
+                                          <Trash2 className="h-3 w-3" />
+                                        </Button>
+
+                                        {/* Move right button */}
+                                        <Button
+                                          variant="ghost"
+                                          size="icon"
+                                          className={`h-6 w-6 rounded-full bg-white/80 ${isLast ? "opacity-50 cursor-not-allowed" : ""}`}
+                                          onClick={() => !isLast && !movingPlant && movePlant(row.id, index, "right")}
+                                          disabled={isLast || movingPlant}
+                                          style={{ color: "var(--ebony)" }}
+                                        >
+                                          <ChevronRight className="h-3 w-3" />
+                                        </Button>
+                                      </div>
                                     </div>
                                   </div>
-
-                                  {/* Caption */}
-                                  <div
-                                    className="p-1 text-center"
-                                    style={{ backgroundColor: "rgba(138, 161, 177, 0.2)" }}
-                                  >
-                                    <p className="text-xs truncate" style={{ color: "var(--cadet-gray)" }}>
-                                      {plantInstance.name || "Unknown Flower"}
-                                    </p>
-                                  </div>
                                 </div>
-                              </div>
-                            )
-                          })}
+                              )
+                            })}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )
-              })
+                  )
+                })}
+              </div>
             )}
           </div>
         </>
       )}
 
-      {/* Edit Row Dialog */}
+      {/* Add Plant Dialog - For selecting and adding plants to a row */}
+      <Dialog
+        open={isAddPlantDialogOpen}
+        onOpenChange={(open) => {
+          setIsAddPlantDialogOpen(open)
+          if (!open) {
+            setAddingPlantToRowId(null)
+            setSelectedPlant(null) // Reset selected plant when closing
+          }
+        }}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add Flower to {rows.find((r) => r.id === addingPlantToRowId)?.name || "Row"}</DialogTitle>
+          </DialogHeader>
+          <div className="py-2">
+            <div className="space-y-1">
+              <Label htmlFor="plant-select">Select a flower:</Label>
+              <div className="mt-1 max-h-[300px] overflow-y-auto border rounded-md">
+                {plants.map((plant) => {
+                  // Calculate availability
+                  const quantity = plant.quantity || 10
+                  const usedCount = usageCounts[plant.id] || 0
+                  const available = quantity - usedCount
+
+                  // Check if plant would fit in the row
+                  const canFit = addingPlantToRowId
+                    ? wouldPlantFit(rows.find((r) => r.id === addingPlantToRowId)!, plant)
+                    : true
+
+                  const isDisabled = available <= 0 || !canFit
+                  const isSelected = selectedPlant === plant.id
+
+                  return (
+                    <div
+                      key={plant.id}
+                      onClick={() => {
+                        if (!isDisabled && !addingPlantLoading) {
+                          setSelectedPlant(plant.id)
+                        }
+                      }}
+                      className={`flex items-center gap-2 p-2 cursor-pointer border-b last:border-b-0 transition-colors ${
+                        isDisabled ? "opacity-50 cursor-not-allowed" : "hover:bg-muted/20"
+                      } ${isSelected ? "bg-primary/20" : ""}`}
+                    >
+                      <div className="w-10 h-10 rounded overflow-hidden flex-shrink-0 flex items-center justify-center">
+                        <CloudinaryImage
+                          src={plant.image_url}
+                          alt={plant.name}
+                          width={40}
+                          height={40}
+                          className="w-full h-full object-cover object-center"
+                        />
+                      </div>
+                      <div className="flex-1 overflow-hidden">
+                        <div className="flex justify-between items-center">
+                          <span className="font-medium truncate">{plant.name}</span>
+                          <Badge variant={available > 0 ? "outline" : "destructive"} className="ml-2">
+                            {available} left
+                          </Badge>
+                        </div>
+                        <div className="text-xs text-muted-foreground">Spacing: {plant.spacing} cm</div>
+                      </div>
+                      {!canFit && (
+                        <div className="text-amber-500 flex items-center text-xs">
+                          <AlertTriangle className="h-3 w-3 mr-1" />
+                          Won't fit
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* Add Flower Button */}
+            <div className="flex justify-end mt-4">
+              <Button
+                onClick={() => {
+                  if (selectedPlant && addingPlantToRowId && !addingPlantLoading) {
+                    addPlantToRow(addingPlantToRowId)
+                  }
+                }}
+                disabled={!selectedPlant || addingPlantLoading}
+                className="flex items-center gap-2"
+              >
+                {addingPlantLoading ? (
+                  <>
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-t-transparent" />
+                    Adding...
+                  </>
+                ) : (
+                  <>
+                    <Flower className="h-4 w-4" />
+                    Add Flower
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Row Dialog - Only shown when editingRow is not null */}
       {editingRow && (
         <Dialog open={!!editingRow} onOpenChange={(open) => !open && setEditingRow(null)}>
           <DialogContent>

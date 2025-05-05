@@ -2,40 +2,80 @@ import { neon, neonConfig, type NeonQueryFunction } from "@neondatabase/serverle
 import { createHash, randomBytes } from "crypto"
 
 // Configure neon with improved connection settings
-neonConfig.fetchConnectionCache = true
+// Remove the deprecated fetchConnectionCache option
 neonConfig.retryOptions = {
-  retries: 5, // Increased from 3
-  retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000), // Exponential backoff with max 10s
+  retries: 10, // Increase retries from 5 to 10
+  retryDelay: (attemptIndex) => Math.min(500 * 2 ** attemptIndex, 5000), // Faster retry with max 5s delay
 }
 
 // Create a more resilient SQL client with better error handling
 let sqlClient: NeonQueryFunction<any, any> | null = null
+let connectionAttemptInProgress = false
+let lastConnectionAttempt = 0
+const CONNECTION_COOLDOWN = 5000 // 5 seconds cooldown between connection attempts
 
 /**
- * Get a database connection with retry logic
+ * Get a database connection with improved retry logic
  */
 export async function getSql() {
-  if (!sqlClient) {
-    try {
-      if (!process.env.DATABASE_URL) {
-        throw new Error("DATABASE_URL environment variable is not set")
-      }
-
-      sqlClient = neon(process.env.DATABASE_URL)
-
-      // Test the connection
-      await sqlClient`SELECT 1`
-      console.log("Database connection established successfully")
-    } catch (error) {
-      console.error("Failed to initialize database connection:", error)
-      sqlClient = null
-      throw new Error(
-        "Database connection failed to initialize: " + (error instanceof Error ? error.message : String(error)),
-      )
-    }
+  // If we already have a client, return it
+  if (sqlClient) {
+    return sqlClient
   }
 
-  return sqlClient
+  // If a connection attempt is already in progress, wait for it
+  if (connectionAttemptInProgress) {
+    // Wait for the current attempt to finish (max 5 seconds)
+    for (let i = 0; i < 50; i++) {
+      await new Promise((resolve) => setTimeout(resolve, 100))
+      if (sqlClient) return sqlClient
+    }
+    // If we still don't have a client after waiting, throw an error
+    throw new Error("Database connection timeout while waiting for existing connection attempt")
+  }
+
+  // Check if we're in the cooldown period after a failed attempt
+  const now = Date.now()
+  if (now - lastConnectionAttempt < CONNECTION_COOLDOWN) {
+    throw new Error("Database connection cooldown period - please try again in a few seconds")
+  }
+
+  // Start a new connection attempt
+  connectionAttemptInProgress = true
+  lastConnectionAttempt = now
+
+  try {
+    if (!process.env.DATABASE_URL) {
+      throw new Error("DATABASE_URL environment variable is not set")
+    }
+
+    console.log("Initializing database connection...")
+
+    // Create a connection with a timeout
+    const connectionPromise = neon(process.env.DATABASE_URL)
+
+    // Set a timeout for the connection attempt
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      setTimeout(() => reject(new Error("Database connection timeout after 10 seconds")), 10000)
+    })
+
+    // Race the connection against the timeout
+    sqlClient = (await Promise.race([connectionPromise, timeoutPromise])) as NeonQueryFunction<any, any>
+
+    // Test the connection with a simple query
+    await sqlClient`SELECT 1`
+    console.log("Database connection established successfully")
+
+    return sqlClient
+  } catch (error) {
+    console.error("Failed to initialize database connection:", error)
+    sqlClient = null
+    throw new Error(
+      "Database connection failed to initialize: " + (error instanceof Error ? error.message : String(error)),
+    )
+  } finally {
+    connectionAttemptInProgress = false
+  }
 }
 
 /**
@@ -44,25 +84,47 @@ export async function getSql() {
 export async function executeQuery<T = any>(
   queryFn: (sql: NeonQueryFunction<any, any>) => Promise<T>,
   errorMessage: string,
+  maxRetries = 3,
 ): Promise<T> {
-  try {
-    const sql = await getSql()
-    return await queryFn(sql)
-  } catch (error) {
-    console.error(`${errorMessage}:`, error)
+  let retries = 0
 
-    // If it's a connection error, clear the client to force reconnection on next attempt
-    if (
-      error instanceof Error &&
-      (error.message.includes("Failed to fetch") ||
-        error.message.includes("connection") ||
-        error.message.includes("network"))
-    ) {
-      console.log("Connection error detected, resetting client")
-      sqlClient = null
+  while (true) {
+    try {
+      const sql = await getSql()
+
+      // Set a timeout for the query execution
+      const queryPromise = queryFn(sql)
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error("Query execution timeout after 15 seconds")), 15000)
+      })
+
+      // Race the query against the timeout
+      return (await Promise.race([queryPromise, timeoutPromise])) as T
+    } catch (error) {
+      console.error(`${errorMessage} (attempt ${retries + 1}/${maxRetries}):`, error)
+
+      // If we've reached max retries, throw the error
+      if (retries >= maxRetries) {
+        throw new Error(`${errorMessage}: ${error instanceof Error ? error.message : String(error)}`)
+      }
+
+      // If it's a connection error, clear the client to force reconnection on next attempt
+      if (
+        error instanceof Error &&
+        (error.message.includes("Failed to fetch") ||
+          error.message.includes("connection") ||
+          error.message.includes("network") ||
+          error.message.includes("timeout"))
+      ) {
+        console.log("Connection error detected, resetting client")
+        sqlClient = null
+      }
+
+      // Exponential backoff before retry
+      const backoffTime = Math.min(100 * 2 ** retries, 1000)
+      await new Promise((resolve) => setTimeout(resolve, backoffTime))
+      retries++
     }
-
-    throw new Error(`${errorMessage}: ${error instanceof Error ? error.message : String(error)}`)
   }
 }
 
@@ -126,6 +188,7 @@ export async function createSession(userId: number) {
       VALUES (${sessionId}, ${userId}, ${expiresAt})
     `
 
+    console.log(`Session created for user ${userId} with ID ${sessionId}`)
     return { sessionId, expiresAt }
   }, "Failed to create session")
 }
@@ -140,6 +203,7 @@ export async function getSessionBySessionId(sessionId: string) {
         AND s.expires_at > NOW()
     `
 
+    console.log(`Session lookup for ${sessionId}: ${sessions.length > 0 ? "Found" : "Not found"}`)
     return sessions[0] || null
   }, "Failed to get session")
 }
@@ -486,4 +550,18 @@ export async function ensureQuantityColumn() {
       throw error
     }
   }, "Failed to ensure quantity column")
+}
+
+// Add a connection warming function
+export async function warmupDatabaseConnection() {
+  try {
+    console.log("Warming up database connection...")
+    const sql = await getSql()
+    await sql`SELECT 1`
+    console.log("Database connection warmed up successfully")
+    return true
+  } catch (error) {
+    console.error("Failed to warm up database connection:", error)
+    return false
+  }
 }
