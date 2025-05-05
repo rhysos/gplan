@@ -169,7 +169,7 @@ export default function GardenPlanner({ userId }: { userId: number }) {
     const loadPlantsAndCounts = async () => {
       try {
         // Fetch plants and usage counts in parallel for better performance
-        const [allPlants, counts] = await Promise.all([getPlants(), getFlowerUsageCounts()])
+        const [allPlants, counts] = await Promise.all([getPlants(userId), getFlowerUsageCounts()])
 
         // Combine plants with usage counts and ensure quantity is set
         const plantsWithCounts = allPlants.map((plant) => ({

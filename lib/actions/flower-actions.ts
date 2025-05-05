@@ -3,13 +3,14 @@
 import { sql } from "@/lib/db"
 import { revalidatePath } from "next/cache"
 
-export async function getAllFlowers() {
+export async function getAllFlowers(userId: number) {
   try {
     // Try to get flowers with quantity
     try {
       return await sql`
         SELECT id, name, spacing, image_url, quantity
         FROM plants
+        WHERE user_id = ${userId}
         ORDER BY name ASC
       `
     } catch (error) {

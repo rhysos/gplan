@@ -369,13 +369,14 @@ export async function deleteRow(rowId: number) {
 }
 
 // Plant functions
-export async function getAllPlants() {
+export async function getAllPlants(userId: number) {
   return executeQuery(async (sql) => {
     // Check if quantity column exists
     try {
       return await sql`
         SELECT id, name, spacing, image_url, quantity
         FROM plants
+        WHERE user_id = ${userId}
         ORDER BY name ASC
       `
     } catch (error) {
