@@ -82,7 +82,7 @@ export function FlowerForm({ open, onOpenChange, onSubmit, isLoading = false, in
                   onValueChange={(value) => setSpacing(value[0])}
                   min={10}
                   max={100}
-                  step={5}
+                  step={1}
                   className="flex-1"
                 />
                 <span className="w-12 text-right">{spacing} cm</span>
