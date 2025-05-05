@@ -486,10 +486,46 @@ export async function createPlantInstanceWithDetails(rowId: number, plantId: num
 
 export async function deletePlantInstance(instanceId: number) {
   return executeQuery(async (sql) => {
+    // First get details about the plant instance and its position
+    const instance = await sql`
+      SELECT pi.id, pi.row_id, pi.plant_id, pi.position
+      FROM plant_instances pi
+      WHERE pi.id = ${instanceId}
+    `
+
+    if (instance.length === 0) {
+      throw new Error("Plant instance not found")
+    }
+
+    const { row_id, plant_id, position } = instance[0]
+
+    // Get the spacing of the plant being removed
+    const plant = await sql`
+      SELECT spacing FROM plants WHERE id = ${plant_id}
+    `
+    const removedSpacing = plant[0].spacing
+
+    // Move plants to the right of the removed plant to the left
+    await sql`
+      UPDATE plant_instances
+      SET position = position - ${removedSpacing}
+      WHERE row_id = ${row_id}
+      AND position > ${position}
+    `
+
+    // Increment the quantity of the removed plant
+    await sql`
+      UPDATE plants
+      SET quantity = quantity + 1
+      WHERE id = ${plant_id}
+    `
+
+    // Finally delete the plant instance
     await sql`
       DELETE FROM plant_instances
       WHERE id = ${instanceId}
     `
+
     return true
   }, "Failed to delete plant instance")
 }
