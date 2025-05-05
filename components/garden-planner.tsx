@@ -1414,7 +1414,8 @@ export default function GardenPlanner({ userId }: { userId: number }) {
           }
         }}
       >
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md" aria-describedby="add-plant-description">
+          <DialogDescription id="add-plant-description">Select a flower to add to the row.</DialogDescription>
           <DialogHeader>
             <DialogTitle>Add Flower to {rows.find((r) => r.id === addingPlantToRowId)?.name || "Row"}</DialogTitle>
           </DialogHeader>

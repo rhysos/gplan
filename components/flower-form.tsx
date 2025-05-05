@@ -55,7 +55,8 @@ export function FlowerForm({ open, onOpenChange, onSubmit, isLoading = false, in
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-md max-h-[90vh] overflow-hidden flex flex-col">
+      <DialogContent className="max-w-md max-h-[90vh] overflow-hidden flex flex-col" aria-describedby="flower-form-description">
+        <DialogDescription id="flower-form-description">Enter the flower details below.</DialogDescription>
         <DialogHeader>
           <DialogTitle>{initialFlower ? "Edit Flower" : "Add New Flower"}</DialogTitle>
         </DialogHeader>
