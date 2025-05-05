@@ -17,21 +17,15 @@ export async function initializeAuth() {
 
 // Make sure the getSession function is correctly retrieving the session
 export async function getSession() {
-  const sessionId = cookies().get("session_id")?.value
-
-  if (!sessionId) {
-    return null
-  }
-
   try {
-    const timeLabel = `getSession-${Date.now()}`
-    console.time(timeLabel)
+    const cookieStore = cookies()
+    const sessionId = await cookieStore.get("session_id")?.value
+
+    if (!sessionId) {
+      return null
+    }
+
     const session = await getSessionBySessionId(sessionId)
-    console.timeEnd(timeLabel)
-
-    // Add debug logging
-    console.log("Session retrieved:", session ? "Session found" : "No session found")
-
     return session
   } catch (error) {
     console.error("Error getting session:", error)
