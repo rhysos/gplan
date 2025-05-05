@@ -18,8 +18,8 @@ export async function initializeAuth() {
 // Make sure the getSession function is correctly retrieving the session
 export async function getSession() {
   try {
-    const cookieStore = cookies()
-    const sessionIdCookie = cookieStore.get("session_id")
+    const cookieStore = await cookies()
+    const sessionIdCookie = await cookieStore.get("session_id")
     const sessionId = sessionIdCookie?.value
 
     if (!sessionId) {
