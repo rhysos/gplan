@@ -1071,8 +1071,8 @@ export default function GardenPlanner({ userId }: { userId: number }) {
                         value={[newRowLength]}
                         onValueChange={(value) => setNewRowLength(value[0])}
                         min={30}
-                        max={600}
-                        step={30}
+                        max={2000}
+                        step={1}
                         className="flex-1"
                       />
                       <span className="w-16 text-right">
@@ -1529,8 +1529,8 @@ export default function GardenPlanner({ userId }: { userId: number }) {
                     value={[editingRow.length]}
                     onValueChange={(value) => setEditingRow({ ...editingRow, length: value[0] })}
                     min={30}
-                    max={600}
-                    step={30}
+                    max={2000}
+                    step={1}
                     className="flex-1"
                   />
                   <span className="w-16 text-right">
