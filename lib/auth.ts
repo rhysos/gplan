@@ -24,9 +24,10 @@ export async function getSession() {
   }
 
   try {
-    console.time("getSession")
+    const timeLabel = `getSession-${Date.now()}`
+    console.time(timeLabel)
     const session = await getSessionBySessionId(sessionId)
-    console.timeEnd("getSession")
+    console.timeEnd(timeLabel)
 
     // Add debug logging
     console.log("Session retrieved:", session ? "Session found" : "No session found")
@@ -41,20 +42,21 @@ export async function getSession() {
 
 export async function getCurrentUser() {
   try {
-    console.time("getCurrentUser")
+    const timeLabel = `getCurrentUser-${Date.now()}`
+    console.time(timeLabel)
     const session = await getSession()
 
     if (!session) {
-      console.timeEnd("getCurrentUser")
+      console.timeEnd(timeLabel)
       return null
     }
 
     const user = await getUserById(session.user_id)
-    console.timeEnd("getCurrentUser")
+    console.timeEnd(timeLabel)
     return user
   } catch (error) {
     console.error("Error getting current user:", error)
-    console.timeEnd("getCurrentUser")
+    console.timeEnd(timeLabel)
     // Don't throw here, just return null to handle gracefully
     return null
   }
