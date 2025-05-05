@@ -942,6 +942,12 @@ export default function GardenPlanner({ userId }: { userId: number }) {
                   <Plus size={16} className="mr-2" />
                   Add New Garden
                 </DropdownMenuItem>
+                {currentGardenId && gardens.length > 1 && (
+                  <DropdownMenuItem onClick={() => deleteGarden(currentGardenId)} className="text-destructive">
+                    <Trash2 size={16} className="mr-2" />
+                    Delete {currentGardenName}
+                  </DropdownMenuItem>
+                )}
                 {gardens.length > 1 && currentGardenId && (
                   <DropdownMenuItem onClick={() => deleteGarden(currentGardenId)} className="text-destructive">
                     <Trash2 size={16} className="mr-2" />
