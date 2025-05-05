@@ -165,9 +165,7 @@ export default function FlowerManagement({ initialFlowers, usageCounts }: Flower
           <Plus className="mr-2 h-4 w-4" /> Add New Flower
         </Button>
 
-        <Button variant="outline" asChild>
-          <Link href="/troubleshoot">Environment Troubleshooter</Link>
-        </Button>
+        
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
