@@ -1327,7 +1327,7 @@ export default function GardenPlanner({ userId }: { userId: number }) {
                                     style={{ borderColor: "var(--cadet-gray)" }}
                                   >
                                     {/* Full height image */}
-                                    <div className="relative w-full h-full">
+                                    <div className="relative w-full h-full flex items-center justify-center">
                                       <CloudinaryImage
                                         src={plantInstance.image_url || "/placeholder.svg?height=80&width=80"}
                                         alt={plantInstance.name || "Flower"}
