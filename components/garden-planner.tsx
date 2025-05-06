@@ -190,7 +190,7 @@ export default function GardenPlanner({ userId }: { userId: number }) {
     }
 
     loadPlantsAndCounts()
-  }, [toast])
+  }, [toast, userId])
 
   // Load rows when garden changes
   // useCallback memoizes this function to prevent unnecessary re-renders
