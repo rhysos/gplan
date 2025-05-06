@@ -175,7 +175,7 @@ export default function GardenPlanner({ userId }: { userId: number }) {
         // Combine plants with usage counts and ensure quantity is set
         const plantsWithCounts = allPlants.map((plant) => ({
           ...plant,
-          quantity: plant.quantity || 10, // Default to 10 if not set
+          quantity: plant.quantity || 1, // Default to 10 if not set
           used_count: counts[plant.id] || 0,
         }))
 
@@ -434,7 +434,7 @@ export default function GardenPlanner({ userId }: { userId: number }) {
 
     // Check if there are enough plants available
     const usedCount = usageCounts[plant.id] || 0
-    const quantity = plant.quantity || 10 // Default to 10 if not set
+    const quantity = plant.quantity || 1 // Default to 10 if not set
 
     if (usedCount >= quantity) {
       toast({
