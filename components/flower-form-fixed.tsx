@@ -12,6 +12,7 @@ import { ImageUrlInput } from "@/components/image-url-input"
 import { FileUpload } from "@/components/file-upload"
 import { CloudinaryImage } from "@/components/cloudinary-image"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import { ScrollArea } from "@/components/ui/scroll-area"
 
 interface FlowerFormProps {
   open: boolean
