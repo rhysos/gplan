@@ -523,7 +523,7 @@ export default function GardenPlanner({ userId }: { userId: number }) {
         }),
       )
 
-      // Close the dialog immediately for better UX
+      // Close the dialog immediatelyr for better UX
       setIsAddPlantDialogOpen(false)
       setSelectedPlant(null)
 
@@ -1441,7 +1441,7 @@ export default function GardenPlanner({ userId }: { userId: number }) {
               <div className="mt-1 max-h-[300px] overflow-y-auto border rounded-md">
                 {plants.map((plant) => {
                   // Calculate availability
-                  const quantity = plant.quantity || 10
+                  const quantity = plant.quantity || 0
                   const usedCount = usageCounts[plant.id] || 0
                   const available = quantity - usedCount
 
