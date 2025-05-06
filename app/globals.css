@@ -4,79 +4,79 @@
 
 @layer base {
   :root {
-    --background: 137 28% 95%;
-    --foreground: 88 9% 29%;
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
 
     --card: 0 0% 100%;
-    --card-foreground: 88 9% 29%;
+    --card-foreground: 240 10% 3.9%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 88 9% 29%;
+    --popover-foreground: 240 10% 3.9%;
 
-    --primary: 137 28% 79%;
-    --primary-foreground: 88 9% 29%;
+    --primary: 142 71% 45%;
+    --primary-foreground: 0 0% 98%;
 
-    --secondary: 189 30% 70%;
-    --secondary-foreground: 88 9% 29%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
 
-    --muted: 205 20% 62%;
-    --muted-foreground: 0 0% 100%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
 
-    --accent: 43 100% 64%;
-    --accent-foreground: 88 9% 29%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 205 20% 82%;
-    --input: 205 20% 82%;
-    --ring: 88 9% 29%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 142 71% 45%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
     /* Custom garden planner colors */
-    --celadon: #b9d8c2;
-    --light-blue: #9ac2c9;
-    --cadet-gray: #8aa1b1;
-    --ebony: #4a5043;
-    --sunglow: #ffcb47;
+    --garden-primary: 142 71% 45%;
+    --garden-secondary: 199 69% 84%;
+    --garden-accent: 39 100% 64%;
+    --garden-neutral: 220 14% 96%;
+    --garden-dark: 240 10% 3.9%;
   }
 
   .dark {
-    --background: 88 9% 15%;
-    --foreground: 137 28% 79%;
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
 
-    --card: 88 9% 20%;
-    --card-foreground: 137 28% 79%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
 
-    --popover: 88 9% 20%;
-    --popover-foreground: 137 28% 79%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
 
-    --primary: 137 28% 79%;
-    --primary-foreground: 88 9% 15%;
+    --primary: 142 71% 45%;
+    --primary-foreground: 240 5.9% 10%;
 
-    --secondary: 189 30% 70%;
-    --secondary-foreground: 88 9% 15%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
 
-    --muted: 205 20% 40%;
-    --muted-foreground: 205 20% 82%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
 
-    --accent: 43 100% 64%;
-    --accent-foreground: 88 9% 15%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 205 20% 40%;
-    --input: 205 20% 40%;
-    --ring: 137 28% 79%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 142 71% 45%;
 
     /* Custom garden planner colors - dark mode */
-    --celadon: #b9d8c2;
-    --light-blue: #9ac2c9;
-    --cadet-gray: #8aa1b1;
-    --ebony: #4a5043;
-    --sunglow: #ffcb47;
+    --garden-primary: 142 71% 45%;
+    --garden-secondary: 199 69% 24%;
+    --garden-accent: 39 100% 64%;
+    --garden-neutral: 240 5% 26%;
+    --garden-dark: 0 0% 98%;
   }
 }
 
@@ -86,33 +86,34 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
 
-/* Custom scrollbar styles */
+/* Modern scrollbar styles */
 .custom-scrollbar::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: hsl(var(--border));
-  border-radius: 4px;
+  background: transparent;
+  border-radius: 8px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: hsl(var(--muted));
-  border-radius: 4px;
+  background: hsl(var(--muted-foreground) / 0.3);
+  border-radius: 8px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--primary));
+  background: hsl(var(--muted-foreground) / 0.5);
 }
 
 /* For Firefox */
 .custom-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: hsl(var(--muted)) hsl(var(--border));
+  scrollbar-color: hsl(var(--muted-foreground) / 0.3) transparent;
 }
 
 /* Cloudinary widget fixes */
@@ -126,22 +127,77 @@
 
 /* Custom animations for garden planner */
 .plant-enter {
-  animation: scale-in 0.3s ease-out forwards;
+  animation: scale-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .plant-exit {
-  animation: scale-out 0.3s ease-out forwards;
+  animation: scale-out 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .plant-move-left {
-  animation: slide-left 0.3s ease-out;
+  animation: slide-left 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .plant-move-right {
-  animation: slide-right 0.3s ease-out;
+  animation: slide-right 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .row-highlight {
-  transition: all 0.3s ease;
-  box-shadow: 0 0 0 2px var(--sunglow);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 0 0 2px hsl(var(--garden-accent));
+}
+
+/* Glass effect */
+.glass {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.dark .glass {
+  background: rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Modern card hover effect */
+.hover-card {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hover-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.1);
+}
+
+/* Garden row styles */
+.garden-row {
+  border-radius: var(--radius);
+  border: 1px solid hsl(var(--border));
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.garden-row:hover {
+  border-color: hsl(var(--garden-primary) / 0.5);
+  box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Plant visualization */
+.plant-container {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.plant-container:hover {
+  z-index: 10;
+}
+
+.plant-card {
+  border-radius: calc(var(--radius) - 2px);
+  overflow: hidden;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.plant-container:hover .plant-card {
+  transform: scale(1.05);
+  box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.1);
 }

@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -23,12 +23,29 @@ interface FlowerFormProps {
   plants?: { id: number; name: string; spacing: number; image_url: string; quantity?: number; used_count?: number }[]
 }
 
-export function FlowerForm({ open, onOpenChange, onSubmit, isLoading = false, initialFlower = null, plants }: FlowerFormProps) {
+export function FlowerForm({
+  open,
+  onOpenChange,
+  onSubmit,
+  isLoading = false,
+  initialFlower = null,
+  plants,
+}: FlowerFormProps) {
   const [name, setName] = useState(initialFlower?.name || "")
   const [spacing, setSpacing] = useState(initialFlower?.spacing || 30)
   const [imageUrl, setImageUrl] = useState(initialFlower?.image_url || "")
   const [quantity, setQuantity] = useState(initialFlower?.quantity || 10)
   const [activeTab, setActiveTab] = useState<string>("url")
+
+  // Reset form when initialFlower changes
+  useEffect(() => {
+    if (initialFlower) {
+      setName(initialFlower.name || "")
+      setSpacing(initialFlower.spacing || 30)
+      setImageUrl(initialFlower.image_url || "")
+      setQuantity(initialFlower.quantity || 10)
+    }
+  }, [initialFlower])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -57,6 +74,7 @@ export function FlowerForm({ open, onOpenChange, onSubmit, isLoading = false, in
   }
 
   const handleImageUpload = (url: string) => {
+    console.log("Image URL received:", url)
     setImageUrl(url)
   }
 
@@ -163,6 +181,7 @@ export function FlowerForm({ open, onOpenChange, onSubmit, isLoading = false, in
                     height={100}
                     className="rounded-md"
                   />
+                  <p className="text-xs text-muted-foreground mt-1 break-all">{imageUrl}</p>
                 </div>
               )}
             </div>

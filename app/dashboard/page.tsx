@@ -1,4 +1,3 @@
-
 import { redirect } from "next/navigation"
 import { getCurrentUser } from "@/lib/auth"
 import GardenPlanner from "@/components/garden-planner"

@@ -2,11 +2,12 @@
 
 import type React from "react"
 
-import { useState, useRef } from "react"
-import { Upload, X, Loader2 } from "lucide-react"
+import { useState, useRef, useEffect } from "react"
+import { Upload, X, Loader2, AlertCircle, Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { uploadImage } from "@/lib/actions/cloudinary-actions"
-import Image from "next/image"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { CloudinaryImage } from "@/components/cloudinary-image"
 
 interface FileUploadProps {
   onUploadComplete: (imageUrl: string) => void
@@ -15,10 +16,25 @@ interface FileUploadProps {
 
 export function FileUpload({ onUploadComplete, className = "" }: FileUploadProps) {
   const [preview, setPreview] = useState<string | null>(null)
+  const [uploadedImage, setUploadedImage] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isUploading, setIsUploading] = useState(false)
+  const [uploadSuccess, setUploadSuccess] = useState(false)
   const [fileName, setFileName] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Reset success message after 3 seconds
+  useEffect(() => {
+    let timer: NodeJS.Timeout
+    if (uploadSuccess) {
+      timer = setTimeout(() => {
+        setUploadSuccess(false)
+      }, 3000)
+    }
+    return () => {
+      if (timer) clearTimeout(timer)
+    }
+  }, [uploadSuccess])
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -40,6 +56,7 @@ export function FileUpload({ onUploadComplete, className = "" }: FileUploadProps
     setFileName(file.name)
     setError(null)
     setIsUploading(true)
+    setUploadSuccess(false)
 
     try {
       // Create a local preview
@@ -54,7 +71,12 @@ export function FileUpload({ onUploadComplete, className = "" }: FileUploadProps
       const result = await uploadImage(formData)
 
       if (result.success && result.data?.secure_url) {
+        // Set the uploaded image URL
+        setUploadedImage(result.data.secure_url)
+        // Call the callback with the uploaded image URL
         onUploadComplete(result.data.secure_url)
+        setUploadSuccess(true)
+        console.log("Image uploaded successfully:", result.data.secure_url)
       } else {
         throw new Error(result.error || "Upload failed")
       }
@@ -68,9 +90,14 @@ export function FileUpload({ onUploadComplete, className = "" }: FileUploadProps
   }
 
   const clearFile = () => {
+    if (preview) {
+      URL.revokeObjectURL(preview)
+    }
     setPreview(null)
+    setUploadedImage(null)
     setFileName(null)
     setError(null)
+    setUploadSuccess(false)
     if (fileInputRef.current) {
       fileInputRef.current.value = ""
     }
@@ -82,10 +109,17 @@ export function FileUpload({ onUploadComplete, className = "" }: FileUploadProps
 
   return (
     <div className={`flex flex-col items-center gap-4 ${className}`}>
-      {preview ? (
+      {preview || uploadedImage ? (
         <div className="w-full">
           <div className="relative w-full aspect-square max-w-[200px] mx-auto mb-2">
-            <Image src={preview || "/placeholder.svg"} alt="Image preview" fill className="object-cover rounded-md" />
+            {/* Use CloudinaryImage for both preview and uploaded image */}
+            <CloudinaryImage
+              src={uploadedImage || preview || ""}
+              alt="Image preview"
+              width={200}
+              height={200}
+              className="rounded-md"
+            />
             {!isUploading && (
               <Button
                 variant="destructive"
@@ -98,6 +132,8 @@ export function FileUpload({ onUploadComplete, className = "" }: FileUploadProps
             )}
           </div>
           <p className="text-sm text-center text-muted-foreground truncate max-w-full">{fileName}</p>
+
+          {uploadedImage && <p className="text-xs text-center text-muted-foreground mt-1 break-all">{uploadedImage}</p>}
         </div>
       ) : (
         <div className="w-full">
@@ -130,7 +166,19 @@ export function FileUpload({ onUploadComplete, className = "" }: FileUploadProps
         </div>
       )}
 
-      {error && <div className="text-sm text-red-500 text-center">{error}</div>}
+      {uploadSuccess && (
+        <Alert className="bg-green-50 text-green-800 border-green-200">
+          <Check className="h-4 w-4 text-green-600" />
+          <AlertDescription>Image uploaded successfully!</AlertDescription>
+        </Alert>
+      )}
+
+      {error && (
+        <Alert variant="destructive" className="mt-2">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
     </div>
   )
 }

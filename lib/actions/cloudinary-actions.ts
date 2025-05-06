@@ -22,24 +22,20 @@ export async function uploadImage(formData: FormData) {
     // Use the Cloudinary API directly with fetch
     const url = `https://api.cloudinary.com/v1_1/${process.env.CLOUDINARY_CLOUD_NAME}/image/upload`
 
-    // Create signature for authentication
-    const params = {
-      timestamp: timestamp,
-      public_id: `garden-planner/flowers/${uniqueId}`,
-      upload_preset: 'garden_planner_preset'
-    }
-    
     // Create form data for the upload
-    const formData = new FormData()
-    formData.append("file", new Blob([buffer], { type: file.type }))
-    formData.append("api_key", process.env.CLOUDINARY_API_KEY || "")
-    formData.append("timestamp", params.timestamp)
-    formData.append("public_id", params.public_id)
-    formData.append("upload_preset", params.upload_preset)
+    const uploadData = new FormData()
+    uploadData.append("file", new Blob([buffer], { type: file.type }))
+
+    // Use the garden_planner_unsigned preset that's already configured in Cloudinary
+    // This matches what's used in the CldUploadWidget component
+    uploadData.append("upload_preset", "garden_planner_unsigned")
+
+    // Add folder path to organize uploads
+    uploadData.append("folder", "garden-planner/flowers")
 
     const response = await fetch(url, {
       method: "POST",
-      body: uploadFormData,
+      body: uploadData,
     })
 
     if (!response.ok) {
@@ -58,7 +54,7 @@ export async function uploadImage(formData: FormData) {
     console.error("Error uploading image:", error)
     return {
       success: false,
-      error: "Failed to upload image",
+      error: error instanceof Error ? error.message : "Failed to upload image",
     }
   }
 }
