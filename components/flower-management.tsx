@@ -155,9 +155,9 @@ export default function FlowerManagement({ initialFlowers, usageCounts, userId }
     }
   }
 
-  const availablePlants = plants.map(plant => ({
-    ...plant,
-    used_count: usageCounts[plant.id] || 0
+  const availablePlants = flowers.map(flower => ({
+    ...flower,
+    used_count: usageCounts[flower.id] || 0
   }))
 
   return (
