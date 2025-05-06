@@ -10,6 +10,11 @@ const nextConfig = {
     domains: ['res.cloudinary.com'],
     unoptimized: true,
   },
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '5mb'
+    },
+  },
   env: {
     NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME,
   },
