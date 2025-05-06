@@ -1,3 +1,4 @@
+
 "use client"
 
 import type React from "react"
@@ -31,8 +32,8 @@ export function FlowerForm({ open, onOpenChange, onSubmit, isLoading = false, in
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!name || !imageUrl) return
     await onSubmit({ name, spacing, image_url: imageUrl, quantity })
-    resetForm()
   }
 
   const resetForm = () => {
@@ -55,13 +56,13 @@ export function FlowerForm({ open, onOpenChange, onSubmit, isLoading = false, in
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-md max-h-[90vh] overflow-hidden flex flex-col" aria-describedby="flower-form-description">
-        <DialogDescription id="flower-form-description">Enter the flower details below.</DialogDescription>
+      <DialogContent className="max-w-md max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle>{initialFlower ? "Edit Flower" : "Add New Flower"}</DialogTitle>
+          <DialogDescription>Enter the flower details below.</DialogDescription>
         </DialogHeader>
         <ScrollArea className="flex-1 pr-4 max-h-[60vh]">
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form id="flower-form" onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="flower-name">Flower Name</Label>
               <Input
@@ -96,7 +97,7 @@ export function FlowerForm({ open, onOpenChange, onSubmit, isLoading = false, in
                 type="number"
                 min="0"
                 value={quantity}
-                onChange={(e) => setQuantity(Number.parseInt(e.target.value) || 0)}
+                onChange={(e) => setQuantity(Number(e.target.value) || 0)}
                 onClick={(e: React.MouseEvent<HTMLInputElement>) => e.currentTarget.select()}
                 placeholder="e.g., 10"
                 required
@@ -134,7 +135,7 @@ export function FlowerForm({ open, onOpenChange, onSubmit, isLoading = false, in
           </form>
         </ScrollArea>
         <DialogFooter className="pt-4 border-t mt-4 flex-shrink-0">
-          <Button type="button" onClick={handleSubmit} disabled={isLoading || !name || !imageUrl}>
+          <Button type="submit" form="flower-form" disabled={isLoading || !name || !imageUrl}>
             {isLoading ? (initialFlower ? "Updating..." : "Adding...") : initialFlower ? "Update Flower" : "Add Flower"}
           </Button>
         </DialogFooter>
