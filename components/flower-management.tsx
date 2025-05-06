@@ -66,6 +66,9 @@ export default function FlowerManagement({ initialFlowers, usageCounts }: Flower
   }) => {
     setIsLoading(true)
     try {
+      if (!userId) {
+        throw new Error("User ID is required")
+      }
       const newFlower = await createFlower(
         flowerData.name,
         flowerData.spacing,

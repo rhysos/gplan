@@ -95,14 +95,14 @@ export async function getFlowerUsageCounts() {
   }
 }
 
-export async function createFlower(name: string, spacing: number, imageUrl: string, quantity = 10, userId?: number) {
+export async function createFlower(name: string, spacing: number, imageUrl: string, quantity = 10, userId: number) {
   try {
     // Try to create flower with quantity
     try {
       const result = await sql`
         INSERT INTO plants (name, spacing, image_url, quantity, user_id)
         VALUES (${name}, ${spacing}, ${imageUrl}, ${quantity}, ${userId})
-        RETURNING id, name, spacing, image_url, quantity
+        RETURNING id, name, spacing, image_url, quantity, user_id
       `
       revalidatePath("/dashboard")
       return result[0]
