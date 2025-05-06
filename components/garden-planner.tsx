@@ -45,8 +45,8 @@ import {
   getRowPlants,
   addPlantToRow as serverAddPlantToRow,
   removePlantFromRow,
-  getAllFlowers,
 } from "@/lib/actions"
+import { getAllFlowers } from "@/lib/actions/flower-actions"
 import { Badge } from "./ui/badge"
 
 // TypeScript interfaces to define the shape of our data
