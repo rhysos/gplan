@@ -110,8 +110,8 @@ export async function createFlower(name: string, spacing: number, imageUrl: stri
       // If quantity column doesn't exist, fall back to the original query
       if (error instanceof Error && error.message.includes('column "quantity" does not exist')) {
         const result = await sql`
-          INSERT INTO plants (name, spacing, image_url)
-          VALUES (${name}, ${spacing}, ${imageUrl})
+          INSERT INTO plants (name, spacing, image_url, user_id)
+          VALUES (${name}, ${spacing}, ${imageUrl}, ${userId})
           RETURNING id, name, spacing, image_url
         `
         // Add default quantity value

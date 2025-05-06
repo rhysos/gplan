@@ -71,7 +71,7 @@ export default function FlowerManagement({ initialFlowers, usageCounts }: Flower
         flowerData.spacing,
         flowerData.image_url,
         flowerData.quantity,
-        this.props.userId
+        userId
       )
       setFlowers([...flowers, { ...newFlower, used_count: 0 }])
       setIsAddingFlower(false)
