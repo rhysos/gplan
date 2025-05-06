@@ -30,8 +30,13 @@ export function FlowerForm({ open, onOpenChange, onSubmit, isLoading = false, in
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    await onSubmit({ name, spacing, image_url: imageUrl, quantity })
-    resetForm()
+    if (!name || !imageUrl) return
+    try {
+      await onSubmit({ name, spacing, image_url: imageUrl, quantity })
+      onOpenChange(false)
+    } catch (error) {
+      console.error("Error submitting form:", error)
+    }
   }
 
   const resetForm = () => {
@@ -40,6 +45,7 @@ export function FlowerForm({ open, onOpenChange, onSubmit, isLoading = false, in
       setSpacing(30)
       setImageUrl("")
       setQuantity(10)
+      setActiveTab("url")
     }
   }
 
@@ -54,9 +60,12 @@ export function FlowerForm({ open, onOpenChange, onSubmit, isLoading = false, in
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md" aria-describedby="flower-form-description">
         <DialogHeader>
           <DialogTitle>{initialFlower ? "Edit Flower" : "Add New Flower"}</DialogTitle>
+          <p id="flower-form-description" className="text-sm text-muted-foreground">
+            Enter the flower details below.
+          </p>
         </DialogHeader>
 
         {/* Main content with native scrolling */}
