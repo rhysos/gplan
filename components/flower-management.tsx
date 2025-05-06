@@ -76,6 +76,11 @@ export default function FlowerManagement({ initialFlowers, usageCounts }: Flower
         flowerData.quantity,
         userId
       )
+      
+      if (!newFlower) {
+        throw new Error("Failed to create flower")
+      }
+      
       setFlowers([...flowers, { ...newFlower, used_count: 0 }])
       setIsAddingFlower(false)
 

@@ -102,7 +102,7 @@ export async function createFlower(name: string, spacing: number, imageUrl: stri
       const result = await sql`
         INSERT INTO plants (name, spacing, image_url, quantity, user_id)
         VALUES (${name}, ${spacing}, ${imageUrl}, ${quantity}, ${userId})
-        RETURNING id, name, spacing, image_url, quantity, user_id
+        RETURNING id, name, spacing, image_url, quantity
       `
       revalidatePath("/dashboard")
       return result[0]
