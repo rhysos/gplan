@@ -45,6 +45,7 @@ import {
   getRowPlants,
   addPlantToRow as serverAddPlantToRow,
   removePlantFromRow,
+  getAllFlowers,
 } from "@/lib/actions"
 import { Badge } from "./ui/badge"
 
@@ -170,7 +171,7 @@ export default function GardenPlanner({ userId }: { userId: number }) {
     const loadPlantsAndCounts = async () => {
       try {
         // Fetch plants and usage counts in parallel for better performance
-        const [allPlants, counts] = await Promise.all([getPlants(userId), getFlowerUsageCounts()])
+        const [allPlants, counts] = await Promise.all([getAllFlowers(userId), getFlowerUsageCounts()])
 
         // Combine plants with usage counts and ensure quantity is set
         const plantsWithCounts = allPlants.map((plant) => ({
@@ -1017,7 +1018,7 @@ export default function GardenPlanner({ userId }: { userId: number }) {
 
       {/* Edit Garden Dialog - Only shown when editingGarden is not null */}
       {editingGarden && (
-        <Dialog open={!!editingGarden} onOpenChange={(open) => !open && setEditingGarden(null)}>
+        <Dialog open={!!editingGarden} onOpenChange={(open) => !open && setEditingGarden(null)}>>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Rename Garden</DialogTitle>
