@@ -24,6 +24,7 @@ interface Flower {
 interface FlowerManagementProps {
   initialFlowers: Flower[]
   usageCounts: Record<number, number>
+  userId: number
 }
 
 export default function FlowerManagement({ initialFlowers, usageCounts }: FlowerManagementProps) {
@@ -70,7 +71,7 @@ export default function FlowerManagement({ initialFlowers, usageCounts }: Flower
         flowerData.spacing,
         flowerData.image_url,
         flowerData.quantity,
-        userId
+        this.props.userId
       )
       setFlowers([...flowers, { ...newFlower, used_count: 0 }])
       setIsAddingFlower(false)
