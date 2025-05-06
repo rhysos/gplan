@@ -27,7 +27,7 @@ interface FlowerManagementProps {
   userId: number
 }
 
-export default function FlowerManagement({ initialFlowers, usageCounts }: FlowerManagementProps) {
+export default function FlowerManagement({ initialFlowers, usageCounts, userId }: FlowerManagementProps) {
   const { toast } = useToast()
   const [flowers, setFlowers] = useState<Flower[]>(
     initialFlowers.map((flower) => ({
