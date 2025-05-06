@@ -22,7 +22,7 @@ interface FlowerFormProps {
   plants?: { id: number; name: string; spacing: number; image_url: string; quantity?: number; used_count?: number }[]
 }
 
-export function FlowerForm({ open, onOpenChange, onSubmit, isLoading = false, initialFlower = null, plants }: FlowerFormProps) {
+export function FlowerForm({ open, onOpenChange, onSubmit, isLoading = false, initialFlower = null, plants = [] }: FlowerFormProps) {
   const [name, setName] = useState(initialFlower?.name || "")
   const [spacing, setSpacing] = useState(initialFlower?.spacing || 30)
   const [imageUrl, setImageUrl] = useState(initialFlower?.image_url || "")
