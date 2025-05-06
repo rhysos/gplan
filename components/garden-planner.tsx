@@ -175,13 +175,14 @@ export default function GardenPlanner({ userId }: { userId: number }) {
         // Combine plants with usage counts and ensure quantity is set
         const plantsWithCounts = allPlants.map((plant) => ({
           ...plant,
-          quantity: plant.quantity || 1, // Default to 10 if not set
+          quantity: plant.quantity || 10, // Default to 10 if not set
           used_count: counts[plant.id] || 0,
         }))
 
         setPlants(plantsWithCounts)
         setUsageCounts(counts)
       } catch (error) {
+        console.error('Error loading plants:', error)
         toast({
           title: "Error",
           description: "Failed to load plants",
@@ -190,7 +191,9 @@ export default function GardenPlanner({ userId }: { userId: number }) {
       }
     }
 
-    loadPlantsAndCounts()
+    if (userId) {
+      loadPlantsAndCounts()
+    }
   }, [toast, userId])
 
   // Load rows when garden changes
