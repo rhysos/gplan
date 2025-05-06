@@ -22,7 +22,7 @@ interface FlowerFormProps {
   plants?: { id: number; name: string; spacing: number; image_url: string; quantity?: number; used_count?: number }[]
 }
 
-export function FlowerForm({ open, onOpenChange, onSubmit, isLoading = false, initialFlower = null }: FlowerFormProps) {
+export function FlowerForm({ open, onOpenChange, onSubmit, isLoading = false, initialFlower = null, plants }: FlowerFormProps) {
   const [name, setName] = useState(initialFlower?.name || "")
   const [spacing, setSpacing] = useState(initialFlower?.spacing || 30)
   const [imageUrl, setImageUrl] = useState(initialFlower?.image_url || "")
@@ -71,6 +71,31 @@ export function FlowerForm({ open, onOpenChange, onSubmit, isLoading = false, in
 
         {/* Main content with native scrolling */}
         <div className="overflow-y-auto max-h-[60vh] pr-2 my-4 custom-scrollbar">
+          {plants && plants.length > 0 && (
+            <div className="mb-4">
+              <Label>Available Plants</Label>
+              <ScrollArea className="h-72 rounded-md border">
+                <div className="p-4">
+                  {plants.map((plant) => (
+                    <div key={plant.id} className="flex items-center space-x-2 mb-2">
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start"
+                        onClick={() => {
+                          setName(plant.name)
+                          setSpacing(plant.spacing)
+                          setImageUrl(plant.image_url)
+                          setQuantity(plant.quantity || 10)
+                        }}
+                      >
+                        {plant.name} ({plant.quantity || 10} available)
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+            </div>
+          )}
           <form id="flower-form" onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="flower-name">Flower Name</Label>
