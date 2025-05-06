@@ -13,7 +13,7 @@ export default async function FlowersPage() {
     redirect("/login")
   }
 
-  const flowers = await getAllFlowers()
+  const flowers = await getAllFlowers(user.id)
   const usageCounts = await getFlowerUsageCounts()
 
   return (

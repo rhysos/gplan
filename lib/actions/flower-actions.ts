@@ -8,8 +8,8 @@ export async function getAllFlowers(userId: number) {
     // Try to get flowers with quantity
     try {
       return await sql`
-        SELECT id, name, spacing, image_url, quantity
-        FROM plants
+        SELECT id, name, spacing, image_url, quantity 
+        FROM plants 
         WHERE user_id = ${userId}
         ORDER BY name ASC
       `
@@ -95,13 +95,13 @@ export async function getFlowerUsageCounts() {
   }
 }
 
-export async function createFlower(name: string, spacing: number, imageUrl: string, quantity = 10) {
+export async function createFlower(name: string, spacing: number, imageUrl: string, quantity = 10, userId?: number) {
   try {
     // Try to create flower with quantity
     try {
       const result = await sql`
-        INSERT INTO plants (name, spacing, image_url, quantity)
-        VALUES (${name}, ${spacing}, ${imageUrl}, ${quantity})
+        INSERT INTO plants (name, spacing, image_url, quantity, user_id)
+        VALUES (${name}, ${spacing}, ${imageUrl}, ${quantity}, ${userId})
         RETURNING id, name, spacing, image_url, quantity
       `
       revalidatePath("/dashboard")
