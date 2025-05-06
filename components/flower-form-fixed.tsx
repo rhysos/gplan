@@ -19,6 +19,7 @@ interface FlowerFormProps {
   onSubmit: (flower: { name: string; spacing: number; image_url: string; quantity: number }) => Promise<void>
   isLoading?: boolean
   initialFlower?: { name: string; spacing: number; image_url: string; quantity: number } | null
+  plants?: { id: number; name: string; spacing: number; image_url: string; quantity?: number; used_count?: number }[]
 }
 
 export function FlowerForm({ open, onOpenChange, onSubmit, isLoading = false, initialFlower = null }: FlowerFormProps) {

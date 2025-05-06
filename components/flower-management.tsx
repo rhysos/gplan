@@ -155,6 +155,11 @@ export default function FlowerManagement({ initialFlowers, usageCounts, userId }
     }
   }
 
+  const availablePlants = plants.map(plant => ({
+    ...plant,
+    used_count: usageCounts[plant.id] || 0
+  }))
+
   return (
     <div>
       {envVarsSet === false && (
@@ -224,6 +229,7 @@ export default function FlowerManagement({ initialFlowers, usageCounts, userId }
         onOpenChange={setIsAddingFlower}
         onSubmit={handleAddFlower}
         isLoading={isLoading}
+        plants={availablePlants}
       />
 
       {/* Edit Flower Dialog */}
