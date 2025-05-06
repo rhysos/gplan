@@ -138,7 +138,7 @@ export default function GardenPlanner({ userId }: { userId: number }) {
   // Load user's gardens when component mounts
   // The dependency array [userId, toast] means this effect runs when userId or toast changes
   useEffect(() => {
-    const loadGardens = async () => {
+    async function loadGardens() {
       try {
         // Fetch gardens from the server
         const userGardens = await getUserGardens(userId)
@@ -150,9 +150,10 @@ export default function GardenPlanner({ userId }: { userId: number }) {
         }
       } catch (error) {
         // Show error toast if fetching fails
+        console.error('Error loading gardens:', error)
         toast({
           title: "Error",
-          description: "Failed to load your gardens",
+          description: "Failed to load gardens",
           variant: "destructive",
         })
       } finally {
