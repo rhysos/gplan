@@ -629,12 +629,27 @@ export default function GardenPlanner({ userId }: { userId: number }) {
       // Wait for animation to complete before removing from UI
       await new Promise((resolve) => setTimeout(resolve, 300))
 
-      // Optimistically update UI
+      // Optimistically update UI with recalculated positions
       const updatedRows = rows.map((row) => {
         if (row.id === rowId) {
+          const remainingPlants = (row.plants || [])
+            .filter((p) => p.id !== plantInstanceId)
+            .sort((a, b) => a.position - b.position)
+
+          // Recalculate positions
+          let currentPosition = row.row_ends || 0
+          const updatedPlants = remainingPlants.map((plant) => {
+            const updatedPlant = {
+              ...plant,
+              position: currentPosition,
+            }
+            currentPosition += plant.spacing
+            return updatedPlant
+          })
+
           return {
             ...row,
-            plants: (row.plants || []).filter((p) => p.id !== plantInstanceId),
+            plants: updatedPlants,
           }
         }
         return row
