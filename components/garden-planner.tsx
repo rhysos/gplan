@@ -1106,11 +1106,11 @@ export default function GardenPlanner({ userId }: { userId: number }) {
           <div className="mb-3">
             <div className="flex items-center">
               <p className="text-muted-foreground flex items-center">
-                {rows.length} rows in this garden
+                {rows.length} Rows
                 <Dialog open={isAddingRow} onOpenChange={setIsAddingRow}>
                   <DialogTrigger asChild>
-                    <Button variant="ghost" size="icon" className="ml-2 h-8 w-8">
-                      <Plus size={16} />
+                    <Button variant="outline" size="icon" className="ml-2 h-8 w-8 border-primary hover:bg-primary/10">
+                      <Plus size={16} className="text-primary" />
                     </Button>
                   </DialogTrigger>
                   <DialogContent className="sm:max-w-md">
