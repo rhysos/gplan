@@ -127,24 +127,86 @@
 
 /* Custom animations for garden planner */
 .plant-enter {
-  animation: scale-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: plant-enter 0.8s ease-out forwards;
 }
 
 .plant-exit {
-  animation: scale-out 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: plant-exit 0.8s ease-out forwards;
 }
 
 .plant-move-left {
-  animation: slide-left 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: plant-move-left 0.8s ease-out forwards;
 }
 
 .plant-move-right {
-  animation: slide-right 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: plant-move-right 0.8s ease-out forwards;
 }
 
-.row-highlight {
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 0 0 2px hsl(var(--garden-accent));
+@keyframes plant-enter {
+  0% {
+    opacity: 0;
+    transform: scale(0.5) translateY(20px);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.05) translateY(-5px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes plant-exit {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.5) translateY(20px);
+  }
+}
+
+@keyframes plant-move-left {
+  0% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(-10px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+@keyframes plant-move-right {
+  0% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(10px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+/* Add a subtle highlight animation for active rows */
+.garden-row[data-active="true"] {
+  animation: row-highlight 1s ease-in-out;
+}
+
+@keyframes row-highlight {
+  0% {
+    box-shadow: 0 0 0 0 rgba(var(--primary), 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(var(--primary), 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(var(--primary), 0);
+  }
 }
 
 /* Glass effect */

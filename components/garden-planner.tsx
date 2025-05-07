@@ -527,7 +527,7 @@ export default function GardenPlanner({ userId }: { userId: number }) {
             })),
           })),
         )
-      }, 500)
+      }, 800)
 
       toast({
         title: "Flower added",
@@ -591,7 +591,7 @@ export default function GardenPlanner({ userId }: { userId: number }) {
         }),
       )
 
-      await new Promise((resolve) => setTimeout(resolve, 300))
+      await new Promise((resolve) => setTimeout(resolve, 500))
 
       const updatedRows = rows.map((row) => {
         if (row.id === rowId) {
@@ -644,7 +644,7 @@ export default function GardenPlanner({ userId }: { userId: number }) {
             isActive: false,
           })),
         )
-      }, 500)
+      }, 800)
 
       toast({
         title: "Flower removed",
@@ -700,7 +700,7 @@ export default function GardenPlanner({ userId }: { userId: number }) {
 
       setRows(updatedRows)
 
-      await new Promise((resolve) => setTimeout(resolve, 50))
+      await new Promise((resolve) => setTimeout(resolve, 100))
 
       let newPositions: PlantInstance[] = []
 
@@ -724,7 +724,7 @@ export default function GardenPlanner({ userId }: { userId: number }) {
         newPositions = sortedPlants
       }
 
-      await new Promise((resolve) => setTimeout(resolve, 300))
+      await new Promise((resolve) => setTimeout(resolve, 500))
 
       setRows(
         rows.map((r) => {
@@ -748,7 +748,7 @@ export default function GardenPlanner({ userId }: { userId: number }) {
             isActive: false,
           })),
         )
-      }, 200)
+      }, 800)
 
       toast({
         title: "Plant moved",
@@ -862,11 +862,7 @@ export default function GardenPlanner({ userId }: { userId: number }) {
       {/* Modern Header with Garden Selector */}
       <header className="mb-8">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center">
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-green-500 to-emerald-700 bg-clip-text text-transparent">
-              Garden Planner
-            </h1>
-          </div>
+          
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-3">
@@ -1209,7 +1205,11 @@ export default function GardenPlanner({ userId }: { userId: number }) {
                   const isNearlyFull = usedPercentage > 90
 
                   return (
-                    <div key={row.id} className={`garden-row p-5 ${row.isActive ? "ring-2 ring-primary" : ""}`}>
+                    <div
+                      key={row.id}
+                      className={`garden-row p-5 ${row.isActive ? "ring-2 ring-primary" : ""}`}
+                      data-active={row.isActive}
+                    >
                       {/* Row Header */}
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
                         <div>
@@ -1447,6 +1447,7 @@ export default function GardenPlanner({ userId }: { userId: number }) {
                     <div
                       key={row.id}
                       className={`garden-row p-5 hover-card ${row.isActive ? "ring-2 ring-primary" : ""}`}
+                      data-active={row.isActive}
                     >
                       {/* Row Header */}
                       <div className="flex items-center justify-between mb-3">

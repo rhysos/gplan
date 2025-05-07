@@ -17,7 +17,7 @@ export default async function FlowersPage() {
 
   return (
     <div className="container mx-auto py-8 px-4">
-      <h1 className="text-3xl font-bold mb-6">Flower Management</h1>
+      
       <FlowerManagement initialFlowers={flowers} usageCounts={usageCounts} userId={user.id} />
     </div>
   )

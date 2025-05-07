@@ -1319,11 +1319,11 @@ packages:
   '@types/node@22.0.0':
     resolution: {integrity: sha512-VT7KSYudcPOzP5Q0wfbowyNLaVR8QWUdw+088uFWwfvpY6uCWaXpqV6ieLAu9WBcnTa7H4Z5RLK8I5t2FuOcqw==}
 
-  '@types/node@22.15.12':
-    resolution: {integrity: sha512-K0fpC/ZVeb8G9rm7bH7vI0KAec4XHEhBam616nVJCV51bKzJ6oA3luG4WdKoaztxe70QaNjS/xBmcDLmr4PiGw==}
+  '@types/node@22.15.14':
+    resolution: {integrity: sha512-BL1eyu/XWsFGTtDWOYULQEs4KR0qdtYfCxYAUYRoB7JP7h9ETYLgQTww6kH8Sj2C0pFGgrpM0XKv6/kbIzYJ1g==}
 
-  '@types/pg@8.12.0':
-    resolution: {integrity: sha512-a9Z11ecnpNPFu2iT4Qo9SSYgM2r1l4UqLIQ454zhCDRzxqOh/vsi57FFovbc64oBGPBotXw5cRhUQtJEHCb/OA==}
+  '@types/pg@8.15.0':
+    resolution: {integrity: sha512-JFxVIO0hZCbQXQGbRBQjbRWNCG3CujfEUBD4Ny2l0QqDyE0vqAPiMSyx0AIszMS0KdLZxz2GxZUUF3FBUXhOXA==}
 
   '@types/react-dom@19.0.0':
     resolution: {integrity: sha512-1KfiQKsH1o00p9m5ag12axHQSb3FOU9H20UTrujVSkNhuCrRHiQWFqgEnTNK5ZNfnzZv8UWrnXVqCmCF9fgY3w==}
@@ -2333,8 +2333,8 @@ snapshots:
 
   '@neondatabase/serverless@1.0.0':
     dependencies:
-      '@types/node': 22.15.12
-      '@types/pg': 8.12.0
+      '@types/node': 22.15.14
+      '@types/pg': 8.15.0
 
   '@next/env@15.2.4': {}
 
@@ -3271,11 +3271,11 @@ snapshots:
     dependencies:
       undici-types: 6.11.1
 
-  '@types/node@22.15.12':
+  '@types/node@22.15.14':
     dependencies:
       undici-types: 6.21.0
 
-  '@types/pg@8.12.0':
+  '@types/pg@8.15.0':
     dependencies:
       '@types/node': 22.0.0
       pg-protocol: 1.9.5
