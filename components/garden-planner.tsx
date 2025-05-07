@@ -1262,7 +1262,7 @@ export default function GardenPlanner({ userId }: { userId: number }) {
                                   ) : (
                                     <>
                                       <Flower size={14} className="mr-1" />
-                                      <span>Add Plant</span>
+                                      <span>Add Flower</span>
                                     </>
                                   )}
                                 </Button>
