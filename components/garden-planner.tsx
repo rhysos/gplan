@@ -1272,11 +1272,18 @@ export default function GardenPlanner({ userId }: { userId: number }) {
                           </TooltipProvider>
 
                           <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" className="h-9 w-9">
-                                <Settings size={16} />
-                              </Button>
-                            </DropdownMenuTrigger>
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="h-9 w-9">
+                                      <Settings size={16} />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                </TooltipTrigger>
+                                <TooltipContent>Row settings</TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem onClick={() => startEditRow(row)}>
                                 <Edit size={14} className="mr-2" />
