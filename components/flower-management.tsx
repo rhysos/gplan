@@ -214,7 +214,7 @@ export default function FlowerManagement({ initialFlowers, usageCounts, userId }
                   className="h-7 text-xs px-2"
                   onClick={() => setEditingFlower(flower)}
                 >
-                  <Edit className="h-3 w-3 mr-1" /> Edit
+                  <Edit className="h-3 w-3 mr-1" />
                 </Button>
                 <Button
                   variant="destructive"
@@ -222,7 +222,7 @@ export default function FlowerManagement({ initialFlowers, usageCounts, userId }
                   className="h-7 text-xs px-2"
                   onClick={() => handleDeleteFlower(flower.id)}
                 >
-                  <Trash2 className="h-3 w-3 mr-1" /> Delete
+                  <Trash2 className="h-3 w-3 mr-1" />
                 </Button>
               </CardFooter>
             </Card>
