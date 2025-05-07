@@ -15,7 +15,7 @@
 
     --primary: 142 71% 45%;
     --primary-foreground: 0 0% 98%;
-    --primary-gradient: linear-gradient(to right, hsl(var(--primary)), hsl(var(--garden-secondary))); /* Attempt to use existing HSL values for gradient */
+    --primary-gradient: linear-gradient(to right, hsl(var(--primary)), hsl(var(--garden-dark))); /* Attempt to use existing HSL values for gradient */
 
     --secondary: 240 4.8% 95.9%;
     --secondary-foreground: 240 5.9% 10%;
