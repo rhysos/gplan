@@ -58,21 +58,19 @@ export function CloudinaryImage({
       )}
 
       <Image
-          src={imageSrc.includes("cloudinary.com") 
-            ? `${imageSrc.replace("/upload/", "/upload/c_scale,q_auto:good,f_auto,w_")}${width}`
-            : imageSrc || "/placeholder.svg"}
-          alt={alt}
-          width={width}
-          height={height}
-          className={`transition-opacity duration-300 ${isLoading ? "opacity-0" : "opacity-100"} object-${objectFit} object-center w-full h-full rounded-md`}
-          onLoad={() => setIsLoading(false)}
-          onError={() => {
-            console.error(`Failed to load image: ${imageSrc}`)
-            setError(true)
-            setIsLoading(false)
-          }}
-          unoptimized={imageSrc.includes("cloudinary.com")} // Skip Next.js optimization for Cloudinary images
-        />
+        src={imageSrc || "/placeholder.svg"}
+        alt={alt}
+        width={width}
+        height={height}
+        className={`transition-opacity duration-300 ${isLoading ? "opacity-0" : "opacity-100"} object-${objectFit} object-center w-full h-full rounded-md`}
+        onLoad={() => setIsLoading(false)}
+        onError={() => {
+          console.error(`Failed to load image: ${imageSrc}`)
+          setError(true)
+          setIsLoading(false)
+        }}
+        unoptimized={imageSrc.includes("cloudinary.com")} // Skip Next.js optimization for Cloudinary images
+      />
     </div>
   )
 }
