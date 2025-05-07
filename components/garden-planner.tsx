@@ -621,22 +621,25 @@ export default function GardenPlanner({ userId }: { userId: number }) {
 
       await removePlantFromRow(plantInstanceId)
 
-      setUsageCounts((prevCounts) => ({
-        ...prevCounts,
-        [plantId]: Math.max(0, (prevCounts[plantId] || 0) - 1),
-      }))
+      // Update usage counts once
+      if (!error) {
+        setUsageCounts((prevCounts) => ({
+          ...prevCounts,
+          [plantId]: Math.max(0, (prevCounts[plantId] || 0) - 1),
+        }))
 
-      setPlants((prevPlants) =>
-        prevPlants.map((p) => {
-          if (p.id === plantId) {
-            return {
-              ...p,
-              used_count: Math.max(0, (p.used_count || 0) - 1),
+        setPlants((prevPlants) =>
+          prevPlants.map((p) => {
+            if (p.id === plantId) {
+              return {
+                ...p,
+                used_count: Math.max(0, (p.used_count || 0) - 1),
+              }
             }
-          }
-          return p
-        }),
-      )
+            return p
+          }),
+        )
+      }
 
       animationTimeoutRef.current = setTimeout(() => {
         setRows((rows) =>
