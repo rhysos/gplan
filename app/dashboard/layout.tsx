@@ -17,14 +17,12 @@ export default function DashboardLayout({
   // Get the current pathname
   const pathname = usePathname()
 
-  // Add debug logging
-  console.log("Dashboard layout - pathname:", pathname)
-
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <Link href="/dashboard" className="flex items-center">
+            {/* Option 1: Using Next.js Image with proper configuration */}
             <Image
               src="https://res.cloudinary.com/amethyst/image/upload/v1746592812/g-plan_vktxdk.png"
               alt="G-PLAN - See Your Garden"
@@ -32,7 +30,15 @@ export default function DashboardLayout({
               height={50}
               className="h-10 w-auto"
               priority
+              unoptimized
             />
+
+            {/* Option 2: If Image component is causing issues, use standard img tag */}
+            {/* <img
+              src="https://res.cloudinary.com/amethyst/image/upload/v1746592812/g-plan_vktxdk.png"
+              alt="G-PLAN - See Your Garden"
+              className="h-10 w-auto"
+            /> */}
           </Link>
           <nav className="flex items-center gap-2">
             <Button variant={pathname === "/dashboard" ? "default" : "ghost"} asChild size="sm" className="text-xs">
