@@ -176,8 +176,8 @@ export default function FlowerManagement({ initialFlowers, usageCounts, userId }
       )}
 
       <div className="mb-6 flex justify-between items-center">
-        <Button onClick={() => setIsAddingFlower(true)}>
-          <Plus className="mr-2 h-4 w-4" /> Add New Flower
+        <Button size="sm" onClick={() => setIsAddingFlower(true)}>
+          <Plus className="mr-1 h-3 w-3" /> Add New Flower
         </Button>
       </div>
 
