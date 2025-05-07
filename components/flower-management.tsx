@@ -74,13 +74,13 @@ export default function FlowerManagement({ initialFlowers, usageCounts, userId }
         flowerData.spacing,
         flowerData.image_url,
         flowerData.quantity,
-        userId
+        userId,
       )
-      
+
       if (!newFlower) {
         throw new Error("Failed to create flower")
       }
-      
+
       setFlowers([...flowers, { ...newFlower, used_count: 0 }])
       setIsAddingFlower(false)
 
@@ -155,9 +155,9 @@ export default function FlowerManagement({ initialFlowers, usageCounts, userId }
     }
   }
 
-  const availablePlants = flowers.map(flower => ({
+  const availablePlants = flowers.map((flower) => ({
     ...flower,
-    used_count: usageCounts[flower.id] || 0
+    used_count: usageCounts[flower.id] || 0,
   }))
 
   return (
@@ -179,43 +179,50 @@ export default function FlowerManagement({ initialFlowers, usageCounts, userId }
         <Button onClick={() => setIsAddingFlower(true)}>
           <Plus className="mr-2 h-4 w-4" /> Add New Flower
         </Button>
-
-
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
         {flowers.map((flower) => {
           const quantity = flower.quantity || 10 // Default to 10 if not set
           const available = quantity - (flower.used_count || 0)
           return (
-            <Card key={flower.id} className="overflow-hidden">
-              <div className="aspect-square relative">
-                <CloudinaryImage
-                  src={flower.image_url}
-                  alt={flower.name}
-                  width={300}
-                  height={300}
-                  className="w-full h-full"
-                />
-              </div>
-              <CardContent className="p-4">
-                <h3 className="font-semibold text-lg">{flower.name}</h3>
-                <div className="flex justify-between items-center mt-1">
-                  <p className="text-sm text-muted-foreground">Spacing: {flower.spacing} cm</p>
-                  <div className="flex gap-2">
-                    <Badge variant={available > 0 ? "outline" : "destructive"}>{available} available</Badge>
-                  </div>
+            <Card key={flower.id} className="overflow-hidden flex flex-col">
+              <div className="p-3 flex justify-center items-center">
+                <div className="w-24 h-24 relative">
+                  <CloudinaryImage
+                    src={flower.image_url}
+                    alt={flower.name}
+                    width={96}
+                    height={96}
+                    className="w-full h-full object-cover rounded-md"
+                  />
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {flower.used_count || 0} used of {quantity} total
-                </p>
+              </div>
+              <CardContent className="p-3 pt-0">
+                <h3 className="font-semibold text-sm truncate text-center">{flower.name}</h3>
+                <div className="flex justify-between items-center mt-1">
+                  <p className="text-xs text-muted-foreground">Spacing: {flower.spacing} cm</p>
+                  <Badge variant={available > 0 ? "outline" : "destructive"} className="text-xs px-1 py-0 h-4">
+                    {available}
+                  </Badge>
+                </div>
               </CardContent>
-              <CardFooter className="p-4 pt-0 flex justify-between">
-                <Button variant="outline" size="sm" onClick={() => setEditingFlower(flower)}>
-                  <Edit className="h-4 w-4 mr-1" /> Edit
+              <CardFooter className="p-3 pt-0 flex justify-between mt-auto">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-7 text-xs px-2"
+                  onClick={() => setEditingFlower(flower)}
+                >
+                  <Edit className="h-3 w-3 mr-1" /> Edit
                 </Button>
-                <Button variant="destructive" size="sm" onClick={() => handleDeleteFlower(flower.id)}>
-                  <Trash2 className="h-4 w-4 mr-1" /> Delete
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  className="h-7 text-xs px-2"
+                  onClick={() => handleDeleteFlower(flower.id)}
+                >
+                  <Trash2 className="h-3 w-3 mr-1" /> Delete
                 </Button>
               </CardFooter>
             </Card>

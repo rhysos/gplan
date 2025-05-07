@@ -1,5 +1,7 @@
 "use client"
 
+import { DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+
 import type React from "react"
 
 // Import necessary React hooks and utilities
@@ -43,7 +45,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
 import { useToast } from "@/hooks/use-toast"
@@ -860,25 +861,24 @@ export default function GardenPlanner({ userId }: { userId: number }) {
   return (
     <div className="container mx-auto py-6 px-4">
       {/* Modern Header with Garden Selector */}
-      <header className="mb-8">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          
-
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-3">
+      <header className="mb-4">
+        <div className="flex items-center justify-between gap-4">
+          {/* Garden Selector (Left aligned) */}
+          <div className="flex items-center">
             {gardens.length > 0 && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="outline"
-                    className="flex items-center gap-2 bg-white dark:bg-gray-900 shadow-sm hover:shadow-md transition-all"
+                    size="sm"
+                    className="flex items-center gap-1.5 bg-white dark:bg-gray-900 shadow-sm hover:shadow-md transition-all text-xs"
                   >
-                    <Home size={16} className="text-primary" />
+                    <Home size={14} className="text-primary" />
                     <span className="font-medium">{currentGardenName}</span>
-                    <ChevronDown size={16} className="text-muted-foreground" />
+                    <ChevronDown size={14} className="text-muted-foreground" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuContent align="start" className="w-56">
                   {gardens.map((garden) => (
                     <DropdownMenuItem
                       key={garden.id}
@@ -908,7 +908,10 @@ export default function GardenPlanner({ userId }: { userId: number }) {
                 </DropdownMenuContent>
               </DropdownMenu>
             )}
+          </div>
 
+          {/* View Controls and Logout (Right aligned) */}
+          <div className="flex items-center gap-3">
             <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as "list" | "grid")}>
               <TabsList className="bg-muted/30">
                 <TooltipProvider>
@@ -1097,92 +1100,91 @@ export default function GardenPlanner({ userId }: { userId: number }) {
       ) : (
         <>
           {/* Garden Controls */}
-          <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <h2 className="text-2xl font-semibold">{currentGardenName}</h2>
-              <p className="text-muted-foreground">{rows.length} rows in this garden</p>
+          <div className="mb-3">
+            <div className="flex items-center">
+              <p className="text-muted-foreground flex items-center">
+                {rows.length} rows in this garden
+                <Dialog open={isAddingRow} onOpenChange={setIsAddingRow}>
+                  <DialogTrigger asChild>
+                    <Button variant="ghost" size="icon" className="ml-2 h-8 w-8">
+                      <Plus size={16} />
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>Add New Garden Row</DialogTitle>
+                      <DialogDescription>Create a new row in your garden for planting.</DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                      <div className="grid gap-2">
+                        <Label htmlFor="row-name">Row Name</Label>
+                        <Input
+                          id="row-name"
+                          value={newRowName}
+                          onChange={(e) => setNewRowName(e.target.value)}
+                          placeholder="e.g., Tulip Row"
+                        />
+                      </div>
+                      <div className="grid gap-2">
+                        <div className="flex justify-between">
+                          <Label htmlFor="row-length">Row Length</Label>
+                          <span className="text-sm text-muted-foreground">
+                            {newRowLength} cm ({(newRowLength / 100).toFixed(1)} m)
+                          </span>
+                        </div>
+                        <Slider
+                          id="row-length"
+                          value={[newRowLength]}
+                          onValueChange={(value) => setNewRowLength(value[0])}
+                          min={30}
+                          max={2000}
+                          step={10}
+                          className="flex-1"
+                        />
+                      </div>
+                      <div className="grid gap-2">
+                        <div className="flex justify-between items-center">
+                          <Label htmlFor="row-ends">Row Ends</Label>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-6 w-6">
+                                  <Info size={14} />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p className="max-w-xs">Space from the edge to the first/last plant in the row</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </div>
+                        <Input
+                          id="row-ends"
+                          type="number"
+                          min="0"
+                          value={newRowEnds}
+                          onChange={(e) => setNewRowEnds(Number(e.target.value))}
+                          onClick={(e: React.MouseEvent<HTMLInputElement>) => e.currentTarget.select()}
+                          placeholder="e.g., 10"
+                        />
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setIsAddingRow(false)}>
+                        Cancel
+                      </Button>
+                      <Button onClick={addRow} className="bg-primary hover:bg-primary/90">
+                        Add Row
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </p>
             </div>
-
-            <Dialog open={isAddingRow} onOpenChange={setIsAddingRow}>
-              <DialogTrigger asChild>
-                <Button className="bg-primary hover:bg-primary/90">
-                  <Plus size={16} className="mr-2" />
-                  Add Garden Row
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-md">
-                <DialogHeader>
-                  <DialogTitle>Add New Garden Row</DialogTitle>
-                  <DialogDescription>Create a new row in your garden for planting.</DialogDescription>
-                </DialogHeader>
-                <div className="grid gap-4 py-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="row-name">Row Name</Label>
-                    <Input
-                      id="row-name"
-                      value={newRowName}
-                      onChange={(e) => setNewRowName(e.target.value)}
-                      placeholder="e.g., Tulip Row"
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <div className="flex justify-between">
-                      <Label htmlFor="row-length">Row Length</Label>
-                      <span className="text-sm text-muted-foreground">
-                        {newRowLength} cm ({(newRowLength / 100).toFixed(1)} m)
-                      </span>
-                    </div>
-                    <Slider
-                      id="row-length"
-                      value={[newRowLength]}
-                      onValueChange={(value) => setNewRowLength(value[0])}
-                      min={30}
-                      max={2000}
-                      step={10}
-                      className="flex-1"
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <div className="flex justify-between items-center">
-                      <Label htmlFor="row-ends">Row Ends</Label>
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-6 w-6">
-                              <Info size={14} />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p className="max-w-xs">Space from the edge to the first/last plant in the row</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </div>
-                    <Input
-                      id="row-ends"
-                      type="number"
-                      min="0"
-                      value={newRowEnds}
-                      onChange={(e) => setNewRowEnds(Number(e.target.value))}
-                      onClick={(e: React.MouseEvent<HTMLInputElement>) => e.currentTarget.select()}
-                      placeholder="e.g., 10"
-                    />
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setIsAddingRow(false)}>
-                    Cancel
-                  </Button>
-                  <Button onClick={addRow} className="bg-primary hover:bg-primary/90">
-                    Add Row
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
           </div>
 
           {/* Garden Rows */}
-          <div className="space-y-6">
+          <div className="space-y-3">
             {rows.length === 0 ? (
               <div className="text-center py-12 px-4 border-2 border-dashed rounded-xl bg-muted/20">
                 <div className="max-w-md mx-auto">
@@ -1198,7 +1200,7 @@ export default function GardenPlanner({ userId }: { userId: number }) {
                 </div>
               </div>
             ) : viewMode === "list" ? (
-              <div className="space-y-6">
+              <div className="space-y-3">
                 {rows.map((row) => {
                   const usedSpace = calculateUsedSpace(row)
                   const usedPercentage = calculateUsedPercentage(row)
@@ -1207,11 +1209,11 @@ export default function GardenPlanner({ userId }: { userId: number }) {
                   return (
                     <div
                       key={row.id}
-                      className={`garden-row p-5 ${row.isActive ? "ring-2 ring-primary" : ""}`}
+                      className={`garden-row p-3 ${row.isActive ? "ring-2 ring-primary" : ""}`}
                       data-active={row.isActive}
                     >
                       {/* Row Header */}
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
                         <div>
                           <h3 className="text-xl font-semibold">{row.name}</h3>
                           <div className="flex items-center gap-3 mt-1 text-sm text-muted-foreground">
@@ -1279,7 +1281,7 @@ export default function GardenPlanner({ userId }: { userId: number }) {
                       </div>
 
                       {/* Progress Bar */}
-                      <div className="mb-4">
+                      <div className="mb-2">
                         <div className="flex justify-between items-center mb-1">
                           <span className="text-sm font-medium">Space Usage</span>
                           <Badge variant={isNearlyFull ? "destructive" : "outline"} className="text-xs">
@@ -1446,11 +1448,11 @@ export default function GardenPlanner({ userId }: { userId: number }) {
                   return (
                     <div
                       key={row.id}
-                      className={`garden-row p-5 hover-card ${row.isActive ? "ring-2 ring-primary" : ""}`}
+                      className={`garden-row p-3 hover-card ${row.isActive ? "ring-2 ring-primary" : ""}`}
                       data-active={row.isActive}
                     >
                       {/* Row Header */}
-                      <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center justify-between mb-2">
                         <h3 className="text-lg font-semibold">{row.name}</h3>
                         <div className="flex items-center gap-1">
                           <TooltipProvider>
@@ -1493,7 +1495,7 @@ export default function GardenPlanner({ userId }: { userId: number }) {
                       </div>
 
                       {/* Row Stats */}
-                      <div className="grid grid-cols-3 gap-2 mb-3">
+                      <div className="grid grid-cols-3 gap-2 mb-2">
                         <div className="bg-muted/30 rounded-md p-2 text-center">
                           <p className="text-xs text-muted-foreground">Length</p>
                           <p className="font-medium">{row.length} cm</p>
@@ -1511,7 +1513,7 @@ export default function GardenPlanner({ userId }: { userId: number }) {
                       {/* Progress Bar */}
                       <Progress
                         value={usedPercentage}
-                        className="h-2 mb-3"
+                        className="h-2 mb-2"
                         indicatorClassName={isNearlyFull ? "bg-destructive" : "bg-primary"}
                       />
 
