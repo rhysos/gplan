@@ -7,16 +7,12 @@ export async function getAllFlowers(userId: number) {
   try {
     // Try to get flowers with quantity
     try {
-      if (!userId) {
-        throw new Error("User ID is required")
-      }
-      const results = await sql`
+      return await sql`
         SELECT id, name, spacing, image_url, quantity 
         FROM plants 
         WHERE user_id = ${userId}
         ORDER BY name ASC
       `
-      return results || []
     } catch (error) {
       // If quantity column doesn't exist, fall back to the original query
       if (error instanceof Error && error.message.includes('column "quantity" does not exist')) {
@@ -24,11 +20,10 @@ export async function getAllFlowers(userId: number) {
         const plants = await sql`
           SELECT id, name, spacing, image_url
           FROM plants
-          WHERE user_id = ${userId}
           ORDER BY name ASC
         `
         // Add default quantity value
-        return (plants || []).map((plant) => ({
+        return plants.map((plant) => ({
           ...plant,
           quantity: 10, // Default quantity
         }))
@@ -37,7 +32,7 @@ export async function getAllFlowers(userId: number) {
     }
   } catch (error) {
     console.error("Error getting flowers:", error)
-    return [] // Return empty array instead of throwing
+    throw new Error("Failed to get flowers")
   }
 }
 

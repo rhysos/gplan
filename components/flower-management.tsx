@@ -176,8 +176,8 @@ export default function FlowerManagement({ initialFlowers, usageCounts, userId }
       )}
 
       <div className="mb-6 flex justify-between items-center">
-        <Button size="sm" onClick={() => setIsAddingFlower(true)}>
-          <Plus className="mr-1 h-3 w-3" /> New Flower
+        <Button onClick={() => setIsAddingFlower(true)}>
+          <Plus className="mr-2 h-4 w-4" /> Add New Flower
         </Button>
       </div>
 
@@ -214,7 +214,7 @@ export default function FlowerManagement({ initialFlowers, usageCounts, userId }
                   className="h-7 text-xs px-2"
                   onClick={() => setEditingFlower(flower)}
                 >
-                  <Edit className="h-3 w-3 mr-1" />
+                  <Edit className="h-3 w-3 mr-1" /> Edit
                 </Button>
                 <Button
                   variant="destructive"
@@ -222,7 +222,7 @@ export default function FlowerManagement({ initialFlowers, usageCounts, userId }
                   className="h-7 text-xs px-2"
                   onClick={() => handleDeleteFlower(flower.id)}
                 >
-                  <Trash2 className="h-3 w-3 mr-1" />
+                  <Trash2 className="h-3 w-3 mr-1" /> Delete
                 </Button>
               </CardFooter>
             </Card>
