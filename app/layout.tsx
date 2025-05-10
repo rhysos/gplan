@@ -9,6 +9,10 @@ const inter = Inter({ subsets: ["latin"] })
 export const metadata = {
   title: "Garden Planner",
   description: "Plan your garden with rows and plants",
+  // Ensure we're not setting any PWA-related metadata
+  manifest: false,
+  themeColor: null,
+  appleWebApp: false,
     generator: 'v0.dev'
 }
 
@@ -24,6 +28,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>{/* Ensure no service worker registration */}</head>
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           {children}

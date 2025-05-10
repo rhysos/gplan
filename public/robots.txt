@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+
+# Ensure v0 service worker can access all resources
+User-agent: v0ServiceWorker
+Allow: /
