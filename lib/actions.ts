@@ -12,7 +12,7 @@ import {
   deleteRow,
   getPlantInstancesByRowId,
   deletePlantInstance,
-  getAllPlants,
+  getAllPlants as dbGetAllPlants,
   getPlantUsageCounts,
   createPlantInstanceWithDetails,
 } from "./db"
@@ -99,7 +99,7 @@ export async function deleteGardenRow(rowId: number) {
 
 // Plant actions
 export async function getPlants() {
-  return await getAllPlants()
+  return await dbGetAllPlants()
 }
 
 export async function getFlowerUsageCounts() {
@@ -130,3 +130,5 @@ export async function removePlantFromRow(instanceId: number) {
   revalidatePath("/dashboard")
   return { success: true }
 }
+
+export const getAllFlowers = dbGetAllPlants

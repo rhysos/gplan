@@ -575,8 +575,12 @@ export default function GardenPlanner({ userId }: { userId: number }) {
     }
   }
 
+  // Find the removePlant function and replace it with this updated version
+  // that only decrements the count after the server action completes
+
   const removePlant = async (rowId: number, plantInstanceId: number, plantId: number) => {
     try {
+      // Apply visual changes immediately (optimistic UI update for visuals only)
       setRows(
         rows.map((row) => {
           if (row.id === rowId) {
@@ -594,6 +598,7 @@ export default function GardenPlanner({ userId }: { userId: number }) {
 
       await new Promise((resolve) => setTimeout(resolve, 500))
 
+      // Update rows with plant removed (visual update only)
       const updatedRows = rows.map((row) => {
         if (row.id === rowId) {
           const remainingPlants = (row.plants || [])
@@ -619,27 +624,26 @@ export default function GardenPlanner({ userId }: { userId: number }) {
       })
       setRows(updatedRows)
 
+      // Call server action to remove plant
       await removePlantFromRow(plantInstanceId)
 
-      // Update usage counts once
-      if (!error) {
-        setUsageCounts((prevCounts) => ({
-          ...prevCounts,
-          [plantId]: Math.max(0, (prevCounts[plantId] || 0) - 1),
-        }))
+      // ONLY update the counts AFTER server action completes successfully
+      setUsageCounts((prevCounts) => ({
+        ...prevCounts,
+        [plantId]: Math.max(0, (prevCounts[plantId] || 0) - 1),
+      }))
 
-        setPlants((prevPlants) =>
-          prevPlants.map((p) => {
-            if (p.id === plantId) {
-              return {
-                ...p,
-                used_count: Math.max(0, (p.used_count || 0) - 1),
-              }
+      setPlants((prevPlants) =>
+        prevPlants.map((p) => {
+          if (p.id === plantId) {
+            return {
+              ...p,
+              used_count: Math.max(0, (p.used_count || 0) - 1),
             }
-            return p
-          }),
-        )
-      }
+          }
+          return p
+        }),
+      )
 
       animationTimeoutRef.current = setTimeout(() => {
         setRows((rows) =>
@@ -1712,7 +1716,7 @@ export default function GardenPlanner({ userId }: { userId: number }) {
                 <Slider
                   id="edit-row-length"
                   value={[editingRow.length]}
-                  onValueChange={(value) => setEditingRow({ ...editingRow, length: value[0] })}
+                  onChange={(value) => setEditingRow({ ...editingRow, length: value[0] })}
                   min={30}
                   max={2000}
                   step={10}
