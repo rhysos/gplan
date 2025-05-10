@@ -1,85 +1,71 @@
 "use client"
 
+import type React from "react"
+
 import { useState } from "react"
-import { Save } from "lucide-react"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
 
-interface GardenFormProps {
-  isOpen: boolean
-  onOpenChange: (open: boolean) => void
-  onSubmit: (name: string) => Promise<any>
-  initialValue?: string
-  title: string
-  description: string
-  submitLabel: string
+interface Garden {
+  id: number
+  name: string
+  user_id: number
 }
 
-export function GardenForm({
-  isOpen,
-  onOpenChange,
-  onSubmit,
-  initialValue = "",
-  title,
-  description,
-  submitLabel,
-}: GardenFormProps) {
-  const [name, setName] = useState(initialValue)
+interface GardenFormProps {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  onSubmit: (garden: { name: string }) => Promise<Garden>
+  gardens: Garden[]
+}
+
+export function GardenForm({ open, onOpenChange, onSubmit, gardens }: GardenFormProps) {
+  const [name, setName] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const handleSubmit = async () => {
-    if (name.trim() === "") return
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!name.trim()) return
 
     setIsSubmitting(true)
     try {
-      await onSubmit(name)
+      await onSubmit({ name })
       setName("")
+      onOpenChange(false)
+    } catch (error) {
+      console.error("Error submitting garden form:", error)
     } finally {
       setIsSubmitting(false)
     }
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
         <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>{description}</DialogDescription>
+          <DialogTitle>Create New Garden</DialogTitle>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid gap-2">
-            <Label htmlFor="garden-name">Garden Name</Label>
-            <Input
-              id="garden-name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="e.g., Backyard Garden"
-              className="col-span-3"
-            />
+        <form onSubmit={handleSubmit}>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label htmlFor="garden-name">Garden Name</Label>
+              <Input
+                id="garden-name"
+                placeholder="Enter garden name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
+            </div>
           </div>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
-            Cancel
-          </Button>
-          <Button onClick={handleSubmit} className="bg-primary hover:bg-primary/90" disabled={isSubmitting}>
-            {isSubmitting ? (
-              <div className="h-4 w-4 animate-spin rounded-full border-2 border-t-transparent mr-2" />
-            ) : (
-              submitLabel.includes("Save") && <Save size={16} className="mr-2" />
-            )}
-            {submitLabel}
-          </Button>
-        </DialogFooter>
+          <DialogFooter>
+            <Button type="submit" disabled={isSubmitting || !name.trim()}>
+              {isSubmitting ? "Creating..." : "Create Garden"}
+            </Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   )

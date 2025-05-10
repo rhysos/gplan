@@ -1,133 +1,155 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
-import type { Garden } from "@/types"
+import { useState, useEffect } from "react"
 import { useToast } from "@/hooks/use-toast"
-import { getUserGardens, createUserGarden, updateUserGarden, deleteUserGarden } from "@/lib/actions"
+import {
+  getGardens,
+  createGarden as createGardenAction,
+  updateGarden as updateGardenAction,
+  deleteGarden as deleteGardenAction,
+} from "@/lib/actions"
 
-export function useGardens(userId: number) {
+export interface Garden {
+  id: number
+  name: string
+  user_id: number
+}
+
+export function useGardens() {
   const { toast } = useToast()
-  const [gardens, setGardens] = useState<Garden[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [currentGardenId, setCurrentGardenId] = useState<number | null>(null)
+  const [gardens, setGardens] = useState<Garden[] | null>(null)
+  const [selectedGarden, setSelectedGarden] = useState<Garden | null>(null)
+  const [isLoadingGardens, setIsLoadingGardens] = useState(true)
 
-  // Load user's gardens when component mounts
+  // Fetch gardens on component mount only
   useEffect(() => {
-    async function loadGardens() {
-      try {
-        const userGardens = await getUserGardens(userId)
-        setGardens(userGardens)
+    let isMounted = true
 
-        if (userGardens.length > 0) {
-          setCurrentGardenId(userGardens[0].id)
+    async function fetchGardens() {
+      try {
+        setIsLoadingGardens(true)
+        const fetchedGardens = await getGardens()
+
+        // Only update state if component is still mounted
+        if (isMounted) {
+          setGardens(fetchedGardens)
+
+          // Select the first garden by default if available and no garden is selected
+          if (fetchedGardens.length > 0 && !selectedGarden) {
+            setSelectedGarden(fetchedGardens[0])
+          }
         }
       } catch (error) {
-        console.error("Error loading gardens:", error)
-        toast({
-          title: "Error",
-          description: "Failed to load gardens",
-          variant: "destructive",
-        })
+        console.error("Error fetching gardens:", error)
+        if (isMounted) {
+          setGardens(null)
+          toast({
+            title: "Error",
+            description: "Failed to load gardens. Please try again.",
+            variant: "destructive",
+          })
+        }
       } finally {
-        setIsLoading(false)
+        if (isMounted) {
+          setIsLoadingGardens(false)
+        }
       }
     }
 
-    loadGardens()
-  }, [userId, toast])
+    fetchGardens()
 
-  const addGarden = async (name: string) => {
-    if (name.trim() === "") return null
+    // Cleanup function to prevent state updates after unmount
+    return () => {
+      isMounted = false
+    }
+    // Empty dependency array - only runs once on mount
+  }, [])
 
+  // Create a new garden
+  const createGarden = async (garden: { name: string }) => {
     try {
-      const newGarden = await createUserGarden(userId, name)
-      setGardens([...gardens, newGarden])
-      setCurrentGardenId(newGarden.id)
-
+      const newGarden = await createGardenAction(garden.name)
+      if (gardens) {
+        const updatedGardens = [...gardens, newGarden]
+        setGardens(updatedGardens)
+        setSelectedGarden(newGarden)
+      }
       toast({
-        title: "Garden created",
-        description: `${newGarden.name} has been created successfully`,
+        title: "Success",
+        description: "Garden created successfully!",
       })
-
       return newGarden
     } catch (error) {
+      console.error("Error creating garden:", error)
       toast({
         title: "Error",
-        description: "Failed to create garden",
+        description: "Failed to create garden. Please try again.",
         variant: "destructive",
       })
-      return null
+      throw error
     }
   }
 
-  const updateGarden = async (gardenId: number, name: string) => {
+  // Update an existing garden
+  const updateGarden = async (id: number, garden: { name: string }) => {
     try {
-      const updatedGarden = await updateUserGarden(gardenId, userId, name)
-      setGardens(gardens.map((g) => (g.id === gardenId ? updatedGarden : g)))
-
+      const updatedGarden = await updateGardenAction(id, garden.name)
+      if (gardens) {
+        const updatedGardens = gardens.map((g) => (g.id === id ? updatedGarden : g))
+        setGardens(updatedGardens)
+        if (selectedGarden?.id === id) {
+          setSelectedGarden(updatedGarden)
+        }
+      }
       toast({
-        title: "Garden updated",
-        description: `${updatedGarden.name} has been updated successfully`,
+        title: "Success",
+        description: "Garden updated successfully!",
       })
-
       return updatedGarden
     } catch (error) {
+      console.error("Error updating garden:", error)
       toast({
         title: "Error",
-        description: "Failed to update garden",
+        description: "Failed to update garden. Please try again.",
         variant: "destructive",
       })
-      return null
+      throw error
     }
   }
 
-  const removeGarden = async (gardenId: number) => {
-    if (gardens.length <= 1) {
-      toast({
-        title: "Cannot delete",
-        description: "You must have at least one garden",
-        variant: "destructive",
-      })
-      return false
-    }
-
+  // Delete a garden
+  const deleteGarden = async (id: number) => {
     try {
-      await deleteUserGarden(gardenId, userId)
-      const newGardens = gardens.filter((g) => g.id !== gardenId)
-      setGardens(newGardens)
-
-      if (gardenId === currentGardenId) {
-        setCurrentGardenId(newGardens[0].id)
+      await deleteGardenAction(id)
+      if (gardens) {
+        const updatedGardens = gardens.filter((g) => g.id !== id)
+        setGardens(updatedGardens)
+        if (selectedGarden?.id === id) {
+          setSelectedGarden(updatedGardens.length > 0 ? updatedGardens[0] : null)
+        }
       }
-
       toast({
-        title: "Garden deleted",
-        description: "Garden has been deleted successfully",
+        title: "Success",
+        description: "Garden deleted successfully!",
       })
-
-      return true
     } catch (error) {
+      console.error("Error deleting garden:", error)
       toast({
         title: "Error",
-        description: "Failed to delete garden",
+        description: "Failed to delete garden. Please try again.",
         variant: "destructive",
       })
-      return false
+      throw error
     }
   }
-
-  const getCurrentGarden = useCallback(() => {
-    return gardens.find((g) => g.id === currentGardenId) || null
-  }, [gardens, currentGardenId])
 
   return {
     gardens,
-    isLoading,
-    currentGardenId,
-    setCurrentGardenId,
-    addGarden,
+    selectedGarden,
+    setSelectedGarden,
+    isLoadingGardens,
+    createGarden,
     updateGarden,
-    removeGarden,
-    getCurrentGarden,
+    deleteGarden,
   }
 }

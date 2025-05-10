@@ -1,27 +1,27 @@
 "use client"
 
-import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
+import { cn } from "@/lib/utils"
 
 interface RowProgressProps {
   usedPercentage: number
-  isNearlyFull: boolean
+  className?: string
 }
 
-export function RowProgress({ usedPercentage, isNearlyFull }: RowProgressProps) {
+export function RowProgress({ usedPercentage, className }: RowProgressProps) {
+  const isNearlyFull = usedPercentage > 90
+  const isOverCapacity = usedPercentage > 100
+
   return (
-    <div className="mb-2">
-      <div className="flex justify-between items-center mb-1">
-        <span className="text-sm font-medium">Space Usage</span>
-        <Badge variant={isNearlyFull ? "destructive" : "outline"} className="text-xs">
-          {usedPercentage}%
-        </Badge>
-      </div>
+    <div className={cn("space-y-1", className)}>
       <Progress
-        value={usedPercentage}
+        value={Math.min(100, usedPercentage)}
         className="h-2"
-        indicatorClassName={isNearlyFull ? "bg-destructive" : "bg-primary"}
+        indicatorClassName={isOverCapacity ? "bg-destructive" : isNearlyFull ? "bg-warning" : "bg-primary"}
       />
+      {isOverCapacity && (
+        <p className="text-xs text-destructive">This row is over capacity by {usedPercentage - 100}%</p>
+      )}
     </div>
   )
 }

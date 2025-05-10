@@ -602,3 +602,101 @@ export async function warmupDatabaseConnection() {
     return false
   }
 }
+
+export async function movePlantInstanceLeft(instanceId: number) {
+  return executeQuery(async (sql) => {
+    // First get details about the plant instance and its position
+    const instance = await sql`
+      SELECT pi.id, pi.row_id, pi.plant_id, pi.position
+      FROM plant_instances pi
+      WHERE pi.id = ${instanceId}
+    `
+
+    if (instance.length === 0) {
+      throw new Error("Plant instance not found")
+    }
+
+    const { row_id, plant_id, position } = instance[0]
+
+    // Get the spacing of the plant being moved
+    const plant = await sql`
+      SELECT spacing FROM plants WHERE id = ${plant_id}
+    `
+    const plantSpacing = plant[0].spacing
+
+    // Check if there is enough space to move the plant to the left
+    if (position - plantSpacing < 0) {
+      throw new Error("Not enough space to move plant to the left")
+    }
+
+    // Move the plant to the left
+    await sql`
+      UPDATE plant_instances
+      SET position = position - ${plantSpacing}
+      WHERE id = ${instanceId}
+    `
+
+    return true
+  }, "Failed to move plant instance left")
+}
+
+export async function movePlantInstanceRight(instanceId: number) {
+  return executeQuery(async (sql) => {
+    // First get details about the plant instance and its position
+    const instance = await sql`
+      SELECT pi.id, pi.row_id, pi.plant_id, pi.position
+      FROM plant_instances pi
+      WHERE pi.id = ${instanceId}
+    `
+
+    if (instance.length === 0) {
+      throw new Error("Plant instance not found")
+    }
+
+    const { row_id, plant_id, position } = instance[0]
+
+    // Get the spacing of the plant being moved
+    const plant = await sql`
+      SELECT spacing FROM plants WHERE id = ${plant_id}
+    `
+    const plantSpacing = plant[0].spacing
+
+    // Get the row length
+    const row = await sql`
+      SELECT length FROM garden_rows WHERE id = ${row_id}
+    `
+    const rowLength = row[0].length
+
+    // Check if there is enough space to move the plant to the right
+    if (position + plantSpacing > rowLength) {
+      throw new Error("Not enough space to move plant to the right")
+    }
+
+    // Move the plant to the right
+    await sql`
+      UPDATE plant_instances
+      SET position = position + ${plantSpacing}
+      WHERE id = ${instanceId}
+    `
+
+    return true
+  }, "Failed to move plant instance right")
+}
+
+export async function moveRowUp(rowId: number) {
+  return executeQuery(async (sql) => {
+    // Move the row up
+    // This is a placeholder, you'll need to implement the actual logic
+    console.log(`Moving row with ID ${rowId} up`)
+    return true
+  }, "Failed to move row up")
+}
+
+export async function moveRowDown(rowId: number) {
+  return executeQuery(async (sql) => {
+    // Move the row down
+    // This is a placeholder, you'll need to implement the actual logic
+    console.log(`Moving row with ID ${rowId} down`)
+    return true
+  }, "Failed to move row down")
+}

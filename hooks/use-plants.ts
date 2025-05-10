@@ -1,107 +1,168 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import type { Plant } from "@/types"
 import { useToast } from "@/hooks/use-toast"
-import { getAllFlowers, getFlowerUsageCounts } from "@/lib/actions"
+import {
+  getAllFlowers,
+  getFlowerUsageCounts,
+  addPlantToRow as addPlantToRowAction,
+  removePlantFromRow as removePlantFromRowAction,
+  movePlantLeft as movePlantLeftAction,
+  movePlantRight as movePlantRightAction,
+} from "@/lib/actions"
 
-export function usePlants(userId: number) {
+export interface Plant {
+  id: number
+  name: string
+  spacing: number
+  image_url: string
+  quantity: number
+}
+
+export interface PlantInstance {
+  id: number
+  row_id: number
+  plant_id: number
+  position: number
+}
+
+export function usePlants() {
   const { toast } = useToast()
-  const [plants, setPlants] = useState<Plant[]>([])
+  const [plants, setPlants] = useState<Plant[] | null>(null)
   const [usageCounts, setUsageCounts] = useState<Record<number, number>>({})
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoadingPlants, setIsLoadingPlants] = useState(true)
 
-  // Load plants and usage counts
+  // Fetch plants and usage counts on component mount
   useEffect(() => {
-    const loadPlantsAndCounts = async () => {
-      if (!userId) return
+    let isMounted = true
 
-      setIsLoading(true)
+    async function fetchPlantsAndCounts() {
       try {
-        const [allPlants, counts] = await Promise.all([getAllFlowers(userId), getFlowerUsageCounts()])
+        setIsLoadingPlants(true)
+        const [fetchedPlants, fetchedCounts] = await Promise.all([
+          getAllFlowers(1), // Assuming user ID 1 for now
+          getFlowerUsageCounts(),
+        ])
 
-        const plantsWithCounts = allPlants.map((plant) => ({
-          ...plant,
-          quantity: plant.quantity || 10,
-          used_count: counts[plant.id] || 0,
-        }))
-
-        setPlants(plantsWithCounts)
-        setUsageCounts(counts)
+        if (isMounted) {
+          setPlants(fetchedPlants)
+          setUsageCounts(fetchedCounts)
+        }
       } catch (error) {
-        console.error("Error loading plants:", error)
-        toast({
-          title: "Error",
-          description: "Failed to load plants",
-          variant: "destructive",
-        })
+        console.error("Error fetching plants:", error)
+        if (isMounted) {
+          setPlants(null)
+          toast({
+            title: "Error",
+            description: "Failed to load plants. Please try again.",
+            variant: "destructive",
+          })
+        }
       } finally {
-        setIsLoading(false)
+        if (isMounted) {
+          setIsLoadingPlants(false)
+        }
       }
     }
 
-    loadPlantsAndCounts()
-  }, [toast, userId])
+    fetchPlantsAndCounts()
 
-  const incrementPlantUsage = (plantId: number) => {
-    setUsageCounts((prev) => ({
-      ...prev,
-      [plantId]: (prev[plantId] || 0) + 1,
-    }))
+    // Cleanup function to prevent state updates after unmount
+    return () => {
+      isMounted = false
+    }
+  }, []) // Empty dependency array - only runs once on mount
 
-    setPlants((prev) =>
-      prev.map((p) => {
-        if (p.id === plantId) {
-          return {
-            ...p,
-            used_count: (p.used_count || 0) + 1,
-          }
-        }
-        return p
-      }),
-    )
+  // Add a plant to a row
+  const addPlantToRow = async (rowId: number, plantId: number, position: number) => {
+    try {
+      const result = await addPlantToRowAction(rowId, plantId, position)
+
+      // Update usage counts
+      setUsageCounts((prev) => ({
+        ...prev,
+        [plantId]: (prev[plantId] || 0) + 1,
+      }))
+
+      toast({
+        title: "Success",
+        description: "Plant added successfully!",
+      })
+      return result
+    } catch (error) {
+      console.error("Error adding plant to row:", error)
+      toast({
+        title: "Error",
+        description: "Failed to add plant. Please try again.",
+        variant: "destructive",
+      })
+      throw error
+    }
   }
 
-  const decrementPlantUsage = (plantId: number) => {
-    setUsageCounts((prev) => ({
-      ...prev,
-      [plantId]: Math.max(0, (prev[plantId] || 0) - 1),
-    }))
+  // Remove a plant from a row
+  const removePlantFromRow = async (plantInstanceId: number, plantId: number) => {
+    try {
+      await removePlantFromRowAction(plantInstanceId)
 
-    setPlants((prev) =>
-      prev.map((p) => {
-        if (p.id === plantId) {
-          return {
-            ...p,
-            used_count: Math.max(0, (p.used_count || 0) - 1),
-          }
-        }
-        return p
-      }),
-    )
+      // Update usage counts
+      setUsageCounts((prev) => ({
+        ...prev,
+        [plantId]: Math.max(0, (prev[plantId] || 0) - 1),
+      }))
+
+      toast({
+        title: "Success",
+        description: "Plant removed successfully!",
+      })
+    } catch (error) {
+      console.error("Error removing plant from row:", error)
+      toast({
+        title: "Error",
+        description: "Failed to remove plant. Please try again.",
+        variant: "destructive",
+      })
+      throw error
+    }
   }
 
-  const getAvailablePlants = () => {
-    return plants.map((plant) => {
-      const usedCount = usageCounts[plant.id] || 0
-      const quantity = plant.quantity || 0
-      const available = quantity - usedCount
+  // Move a plant left in a row
+  const movePlantLeft = async (plantInstanceId: number) => {
+    try {
+      await movePlantLeftAction(plantInstanceId)
+    } catch (error) {
+      console.error("Error moving plant left:", error)
+      toast({
+        title: "Error",
+        description: "Failed to move plant. Please try again.",
+        variant: "destructive",
+      })
+      throw error
+    }
+  }
 
-      return {
-        ...plant,
-        available,
-      }
-    })
+  // Move a plant right in a row
+  const movePlantRight = async (plantInstanceId: number) => {
+    try {
+      await movePlantRightAction(plantInstanceId)
+    } catch (error) {
+      console.error("Error moving plant right:", error)
+      toast({
+        title: "Error",
+        description: "Failed to move plant. Please try again.",
+        variant: "destructive",
+      })
+      throw error
+    }
   }
 
   return {
-    plants,
+    plants: plants || [],
+    isLoadingPlants,
     usageCounts,
-    isLoading,
-    incrementPlantUsage,
-    decrementPlantUsage,
-    getAvailablePlants,
-    setPlants,
-    setUsageCounts,
+    addPlantToRow,
+    removePlantFromRow,
+    movePlantLeft,
+    movePlantRight,
   }
 }

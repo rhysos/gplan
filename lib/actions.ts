@@ -3,18 +3,22 @@
 import { login as authLogin, signup as authSignup, logout as authLogout } from "./auth"
 import {
   getGardensByUserId,
-  createGarden,
-  updateGarden,
-  deleteGarden,
+  createGarden as dbCreateGarden,
+  updateGarden as dbUpdateGarden,
+  deleteGarden as dbDeleteGarden,
   getRowsByGardenId,
-  createRow,
-  updateRow,
-  deleteRow,
+  createRow as dbCreateRow,
+  updateRow as dbUpdateRow,
+  deleteRow as dbDeleteRow,
   getPlantInstancesByRowId,
   deletePlantInstance,
   getAllPlants as dbGetAllPlants,
   getPlantUsageCounts,
   createPlantInstanceWithDetails,
+  movePlantInstanceLeft,
+  movePlantInstanceRight,
+  moveRowUp as dbMoveRowUp,
+  moveRowDown as dbMoveRowDown,
 } from "./db"
 import { revalidatePath } from "next/cache"
 
@@ -50,55 +54,69 @@ export async function logoutUser() {
 }
 
 // Garden actions
-export async function getUserGardens(userId: number) {
-  return await getGardensByUserId(userId)
+export async function getGardens() {
+  // For now, we'll assume user ID 1
+  return await getGardensByUserId(1)
 }
 
-export async function createUserGarden(userId: number, name: string) {
-  const garden = await createGarden(userId, name)
+export async function createGarden(name: string) {
+  // For now, we'll assume user ID 1
+  const garden = await dbCreateGarden(1, name)
   revalidatePath("/dashboard")
   return garden
 }
 
-export async function updateUserGarden(gardenId: number, userId: number, name: string) {
-  const garden = await updateGarden(gardenId, userId, name)
+export async function updateGarden(gardenId: number, name: string) {
+  // For now, we'll assume user ID 1
+  const garden = await dbUpdateGarden(gardenId, 1, name)
   revalidatePath("/dashboard")
   return garden
 }
 
-export async function deleteUserGarden(gardenId: number, userId: number) {
-  await deleteGarden(gardenId, userId)
+export async function deleteGarden(gardenId: number) {
+  // For now, we'll assume user ID 1
+  await dbDeleteGarden(gardenId, 1)
   revalidatePath("/dashboard")
   return { success: true }
 }
 
 // Row actions
-export async function getGardenRows(gardenId: number) {
+export async function getRows(gardenId: number) {
   return await getRowsByGardenId(gardenId)
 }
 
-// Update the createGardenRow function to include row_ends as a number
-export async function createGardenRow(gardenId: number, name: string, length: number, rowEnds = 0) {
-  const row = await createRow(gardenId, name, length, rowEnds)
+export async function createRow(gardenId: number, name: string, length: number, rowEnds = 0) {
+  const row = await dbCreateRow(gardenId, name, length, rowEnds)
   revalidatePath("/dashboard")
   return row
 }
 
-// Update the updateGardenRow function to include row_ends as a number
-export async function updateGardenRow(rowId: number, name: string, length: number, rowEnds = 0) {
-  const row = await updateRow(rowId, name, length, rowEnds)
+export async function updateRow(rowId: number, name: string, length: number, rowEnds = 0) {
+  const row = await dbUpdateRow(rowId, name, length, rowEnds)
   revalidatePath("/dashboard")
   return row
 }
 
-export async function deleteGardenRow(rowId: number) {
-  await deleteRow(rowId)
+export async function deleteRow(rowId: number) {
+  await dbDeleteRow(rowId)
+  revalidatePath("/dashboard")
+  return { success: true }
+}
+
+export async function moveRowUp(rowId: number) {
+  await dbMoveRowUp(rowId)
+  revalidatePath("/dashboard")
+  return { success: true }
+}
+
+export async function moveRowDown(rowId: number) {
+  await dbMoveRowDown(rowId)
   revalidatePath("/dashboard")
   return { success: true }
 }
 
 // Plant actions
-export async function getPlants() {
+export async function getAllFlowers(userId: number) {
   return await dbGetAllPlants()
 }
 
@@ -107,16 +125,13 @@ export async function getFlowerUsageCounts() {
 }
 
 // Plant instance actions
-export async function getRowPlants(rowId: number) {
+export async function getPlantsByRow(rowId: number) {
   return await getPlantInstancesByRowId(rowId)
 }
 
 export async function addPlantToRow(rowId: number, plantId: number, position: number) {
   try {
-    // Use the optimized function that gets plant details in a single query
     const plantInstance = await createPlantInstanceWithDetails(rowId, plantId, position)
-
-    // No need for a separate query to get plant details
     revalidatePath("/dashboard")
     return plantInstance
   } catch (error) {
@@ -131,4 +146,14 @@ export async function removePlantFromRow(instanceId: number) {
   return { success: true }
 }
 
-export const getAllFlowers = dbGetAllPlants
+export async function movePlantLeft(instanceId: number) {
+  await movePlantInstanceLeft(instanceId)
+  revalidatePath("/dashboard")
+  return { success: true }
+}
+
+export async function movePlantRight(instanceId: number) {
+  await movePlantInstanceRight(instanceId)
+  revalidatePath("/dashboard")
+  return { success: true }
+}

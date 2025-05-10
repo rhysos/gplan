@@ -1,169 +1,200 @@
 "use client"
 
-import { useState, useEffect, useCallback, useRef } from "react"
-import type { GardenRow } from "@/types"
+import { useState, useEffect } from "react"
 import { useToast } from "@/hooks/use-toast"
-import { getGardenRows, createGardenRow, updateGardenRow, deleteGardenRow, getRowPlants } from "@/lib/actions"
+import {
+  getRows,
+  createRow as createRowAction,
+  updateRow as updateRowAction,
+  deleteRow as deleteRowAction,
+  moveRowUp as moveRowUpAction,
+  moveRowDown as moveRowDownAction,
+} from "@/lib/actions"
 
-export function useRows(gardenId: number | null) {
+export interface Row {
+  id: number
+  garden_id: number
+  name: string
+  length: number
+  position: number
+  row_ends?: number
+}
+
+export function useRows(gardenId: number | undefined) {
   const { toast } = useToast()
-  const [rows, setRows] = useState<GardenRow[]>([])
-  const [isLoading, setIsLoading] = useState(false)
-  const animationTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const [rows, setRows] = useState<Row[] | null>(null)
+  const [isLoadingRows, setIsLoadingRows] = useState(true)
 
-  // Clean up any animation timeouts when component unmounts
+  // Store the gardenId in a ref to avoid dependency issues
+  const [currentGardenId, setCurrentGardenId] = useState<number | undefined>(gardenId)
+
+  // Fetch rows when gardenId changes
   useEffect(() => {
-    return () => {
-      if (animationTimeoutRef.current) {
-        clearTimeout(animationTimeoutRef.current)
+    // Update the stored gardenId when it changes
+    if (gardenId !== currentGardenId) {
+      setCurrentGardenId(gardenId)
+    }
+
+    let isMounted = true
+
+    async function fetchRows() {
+      if (!gardenId) {
+        if (isMounted) {
+          setRows([])
+          setIsLoadingRows(false)
+        }
+        return
+      }
+
+      try {
+        setIsLoadingRows(true)
+        const fetchedRows = await getRows(gardenId)
+
+        if (isMounted) {
+          setRows(fetchedRows)
+        }
+      } catch (error) {
+        console.error("Error fetching rows:", error)
+        if (isMounted) {
+          setRows(null)
+          toast({
+            title: "Error",
+            description: "Failed to load rows. Please try again.",
+            variant: "destructive",
+          })
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoadingRows(false)
+        }
       }
     }
-  }, [])
 
-  // Load rows when garden changes
-  const loadRows = useCallback(async () => {
-    if (!gardenId) return
+    fetchRows()
 
-    setIsLoading(true)
-    try {
-      const gardenRows = await getGardenRows(gardenId)
-
-      const rowsWithPlants = await Promise.all(
-        gardenRows.map(async (row) => {
-          try {
-            const plants = await getRowPlants(row.id)
-            return {
-              ...row,
-              plants: plants || [],
-              row_ends: typeof row.row_ends === "number" ? row.row_ends : 0,
-            }
-          } catch (error) {
-            console.error(`Error loading plants for row ${row.id}:`, error)
-            return { ...row, plants: [], row_ends: 0 }
-          }
-        }),
-      )
-
-      setRows(rowsWithPlants)
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to load garden rows",
-        variant: "destructive",
-      })
-    } finally {
-      setIsLoading(false)
+    // Cleanup function to prevent state updates after unmount
+    return () => {
+      isMounted = false
     }
-  }, [gardenId, toast])
+  }, [gardenId]) // Only depend on gardenId
 
-  // Call loadRows when gardenId changes
-  useEffect(() => {
-    loadRows()
-  }, [gardenId, loadRows])
-
-  const addRow = async (name: string, length: number, rowEnds = 0) => {
-    if (name.trim() === "" || !gardenId) return null
+  // Create a new row
+  const createRow = async (row: { name: string; length: number; row_ends?: number }) => {
+    if (!gardenId) return null
 
     try {
-      const newRow = await createGardenRow(gardenId, name, length, rowEnds)
-      setRows([...rows, { ...newRow, plants: [] }])
-
+      const newRow = await createRowAction(gardenId, row.name, row.length, row.row_ends || 0)
+      if (rows) {
+        setRows([...rows, newRow])
+      }
       toast({
-        title: "Row added",
-        description: `${newRow.name} has been added successfully`,
+        title: "Success",
+        description: "Row created successfully!",
       })
-
       return newRow
     } catch (error) {
+      console.error("Error creating row:", error)
       toast({
         title: "Error",
-        description: "Failed to add row",
+        description: "Failed to create row. Please try again.",
         variant: "destructive",
       })
-      return null
+      throw error
     }
   }
 
-  const updateRow = async (rowId: number, name: string, length: number, rowEnds = 0) => {
+  // Update an existing row
+  const updateRow = async (id: number, row: { name: string; length: number; row_ends?: number }) => {
     try {
-      const updatedRow = await updateGardenRow(rowId, name, length, rowEnds)
-      setRows(rows.map((row) => (row.id === rowId ? { ...updatedRow, plants: row.plants } : row)))
-
+      const updatedRow = await updateRowAction(id, row.name, row.length, row.row_ends || 0)
+      if (rows) {
+        setRows(rows.map((r) => (r.id === id ? updatedRow : r)))
+      }
       toast({
-        title: "Row updated",
-        description: `${updatedRow.name} has been updated successfully`,
+        title: "Success",
+        description: "Row updated successfully!",
       })
-
       return updatedRow
     } catch (error) {
+      console.error("Error updating row:", error)
       toast({
         title: "Error",
-        description: "Failed to update row",
+        description: "Failed to update row. Please try again.",
         variant: "destructive",
       })
-      return null
+      throw error
     }
   }
 
-  const removeRow = async (rowId: number) => {
+  // Delete a row
+  const deleteRow = async (id: number) => {
     try {
-      await deleteGardenRow(rowId)
-      setRows(rows.filter((row) => row.id !== rowId))
-
+      await deleteRowAction(id)
+      if (rows) {
+        setRows(rows.filter((r) => r.id !== id))
+      }
       toast({
-        title: "Row deleted",
-        description: "Row has been deleted successfully",
+        title: "Success",
+        description: "Row deleted successfully!",
       })
-
-      return true
     } catch (error) {
+      console.error("Error deleting row:", error)
       toast({
         title: "Error",
-        description: "Failed to delete row",
+        description: "Failed to delete row. Please try again.",
         variant: "destructive",
       })
-      return false
+      throw error
     }
   }
 
-  const setRowActive = (rowId: number, isActive: boolean) => {
-    setRows(
-      rows.map((r) => ({
-        ...r,
-        isActive: r.id === rowId ? isActive : r.isActive,
-      })),
-    )
+  // Move a row up in position
+  const moveRowUp = async (id: number) => {
+    try {
+      await moveRowUpAction(id)
+      // Refresh rows after moving
+      if (gardenId) {
+        const updatedRows = await getRows(gardenId)
+        setRows(updatedRows)
+      }
+    } catch (error) {
+      console.error("Error moving row up:", error)
+      toast({
+        title: "Error",
+        description: "Failed to move row. Please try again.",
+        variant: "destructive",
+      })
+      throw error
+    }
   }
 
-  const clearAllRowAnimations = (delay = 800) => {
-    if (animationTimeoutRef.current) {
-      clearTimeout(animationTimeoutRef.current)
+  // Move a row down in position
+  const moveRowDown = async (id: number) => {
+    try {
+      await moveRowDownAction(id)
+      // Refresh rows after moving
+      if (gardenId) {
+        const updatedRows = await getRows(gardenId)
+        setRows(updatedRows)
+      }
+    } catch (error) {
+      console.error("Error moving row down:", error)
+      toast({
+        title: "Error",
+        description: "Failed to move row. Please try again.",
+        variant: "destructive",
+      })
+      throw error
     }
-
-    animationTimeoutRef.current = setTimeout(() => {
-      setRows((rows) =>
-        rows.map((r) => ({
-          ...r,
-          isActive: false,
-          plants: r.plants?.map((p) => ({
-            ...p,
-            animationState: null,
-          })),
-        })),
-      )
-    }, delay)
   }
 
   return {
-    rows,
-    isLoading,
-    loadRows,
-    addRow,
+    rows: rows || [],
+    isLoadingRows,
+    createRow,
     updateRow,
-    removeRow,
-    setRowActive,
-    clearAllRowAnimations,
-    setRows,
-    animationTimeoutRef,
+    deleteRow,
+    moveRowUp,
+    moveRowDown,
   }
 }

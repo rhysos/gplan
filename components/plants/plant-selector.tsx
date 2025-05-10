@@ -1,111 +1,123 @@
 "use client"
 
 import { useState } from "react"
-import { Flower } from "lucide-react"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
-import type { Plant, GardenRow } from "@/types"
+import { Input } from "@/components/ui/input"
+import { Search } from "lucide-react"
 import { PlantCard } from "./plant-card"
 import { wouldPlantFit } from "@/utils/garden-utils"
 
+interface Plant {
+  id: number
+  name: string
+  spacing: number
+  image_url: string
+  quantity: number
+}
+
+interface Row {
+  id: number
+  garden_id: number
+  name: string
+  length: number
+  position: number
+  row_ends?: number
+}
+
 interface PlantSelectorProps {
-  isOpen: boolean
+  open: boolean
   onOpenChange: (open: boolean) => void
-  plants: (Plant & { available?: number })[]
-  selectedRow: GardenRow | null
-  onAddPlant: (plantId: number) => Promise<void>
-  isLoading: boolean
+  plants: Plant[]
+  usageCounts: Record<number, number>
+  onSelectPlant: (plantId: number) => Promise<void>
+  rowId: number
+  rows: Row[]
 }
 
 export function PlantSelector({
-  isOpen,
+  open,
   onOpenChange,
   plants,
-  selectedRow,
-  onAddPlant,
-  isLoading,
+  usageCounts,
+  onSelectPlant,
+  rowId,
+  rows,
 }: PlantSelectorProps) {
-  const [selectedPlant, setSelectedPlant] = useState<number | null>(null)
+  const [selectedPlantId, setSelectedPlantId] = useState<number | null>(null)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const handleClose = () => {
-    setSelectedPlant(null)
-    onOpenChange(false)
-  }
+  const currentRow = rows.find((r) => r.id === rowId)
 
-  const handleAddPlant = async () => {
-    if (selectedPlant) {
-      await onAddPlant(selectedPlant)
-      setSelectedPlant(null)
+  const handleSelectPlant = async () => {
+    if (!selectedPlantId) return
+
+    setIsSubmitting(true)
+    try {
+      await onSelectPlant(selectedPlantId)
+      setSelectedPlantId(null)
+      setSearchQuery("")
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
+  const filteredPlants = plants.filter((plant) => plant.name.toLowerCase().includes(searchQuery.toLowerCase()))
+
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Add Flower to Row</DialogTitle>
-          <DialogDescription>Select a flower to add to {selectedRow?.name || "this row"}.</DialogDescription>
+          <DialogTitle>Add Plant to Row</DialogTitle>
         </DialogHeader>
 
-        <div className="py-4">
-          <Label htmlFor="plant-select" className="mb-2 block">
-            Select a flower:
-          </Label>
-          <ScrollArea className="h-[300px] rounded-md border">
-            <div className="p-1">
-              {plants.map((plant) => {
-                const canFit = selectedRow ? wouldPlantFit(selectedRow, plant) : true
-                const isDisabled = (plant.available || 0) <= 0 || !canFit
-                const isSelected = selectedPlant === plant.id
+        <div className="relative mb-4">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search plants..."
+            className="pl-8"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+
+        <ScrollArea className="h-[300px] rounded-md border">
+          <div className="p-4 grid gap-2">
+            {filteredPlants.length === 0 ? (
+              <p className="text-center text-muted-foreground py-4">No plants found</p>
+            ) : (
+              filteredPlants.map((plant) => {
+                const usedCount = usageCounts[plant.id] || 0
+                const available = plant.quantity - usedCount
+                const canFit = currentRow ? wouldPlantFit(currentRow, plant) : true
 
                 return (
                   <PlantCard
                     key={plant.id}
                     plant={plant}
-                    isSelected={isSelected}
-                    isDisabled={isDisabled}
+                    available={available}
                     canFit={canFit}
+                    isSelected={selectedPlantId === plant.id}
                     onClick={() => {
-                      if (!isDisabled && !isLoading) {
-                        setSelectedPlant(plant.id)
+                      if (available > 0 && canFit) {
+                        setSelectedPlantId(plant.id)
                       }
                     }}
                   />
                 )
-              })}
-            </div>
-          </ScrollArea>
-        </div>
+              })
+            )}
+          </div>
+        </ScrollArea>
 
         <DialogFooter>
-          <Button variant="outline" onClick={handleClose}>
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
             Cancel
           </Button>
-          <Button
-            onClick={handleAddPlant}
-            disabled={!selectedPlant || isLoading}
-            className="bg-primary hover:bg-primary/90"
-          >
-            {isLoading ? (
-              <>
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-t-transparent mr-2" />
-                Adding...
-              </>
-            ) : (
-              <>
-                <Flower className="h-4 w-4 mr-2" />
-                Add Flower
-              </>
-            )}
+          <Button onClick={handleSelectPlant} disabled={!selectedPlantId || isSubmitting}>
+            {isSubmitting ? "Adding..." : "Add Plant"}
           </Button>
         </DialogFooter>
       </DialogContent>

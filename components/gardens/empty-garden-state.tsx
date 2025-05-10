@@ -1,26 +1,39 @@
 "use client"
 
-import { Home, Plus } from "lucide-react"
+import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { GardenForm } from "./garden-form"
 
-interface EmptyGardenStateProps {
-  onAddGarden: () => void
+interface Garden {
+  id: number
+  name: string
+  user_id: number
 }
 
-export function EmptyGardenState({ onAddGarden }: EmptyGardenStateProps) {
+interface EmptyGardenStateProps {
+  onCreateGarden: () => void
+  gardenFormOpen: boolean
+  setGardenFormOpen: (open: boolean) => void
+  createGarden: (garden: { name: string }) => Promise<Garden>
+}
+
+export function EmptyGardenState({
+  onCreateGarden,
+  gardenFormOpen,
+  setGardenFormOpen,
+  createGarden,
+}: EmptyGardenStateProps) {
   return (
-    <div className="text-center py-16 px-4 border-2 border-dashed rounded-xl bg-muted/20">
-      <div className="max-w-md mx-auto">
-        <div className="bg-primary/10 rounded-full p-3 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-          <Home size={28} className="text-primary" />
+    <Card>
+      <CardContent className="pt-6">
+        <div className="text-center py-12">
+          <h2 className="text-2xl font-bold mb-2">Welcome to Garden Planner</h2>
+          <p className="text-muted-foreground mb-6">Get started by creating your first garden</p>
+          <Button onClick={onCreateGarden}>Create Garden</Button>
+
+          <GardenForm open={gardenFormOpen} onOpenChange={setGardenFormOpen} onSubmit={createGarden} gardens={[]} />
         </div>
-        <h2 className="text-xl font-semibold mb-2">No Gardens Yet</h2>
-        <p className="text-muted-foreground mb-6">Create your first garden to start planning your rows and plants.</p>
-        <Button onClick={onAddGarden} className="bg-primary hover:bg-primary/90" size="lg">
-          <Plus size={18} className="mr-2" />
-          Create Your First Garden
-        </Button>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   )
 }
