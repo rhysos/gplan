@@ -576,11 +576,7 @@ export default function GardenPlanner({ userId }: { userId: number }) {
   }
 
   const removePlant = async (rowId: number, plantInstanceId: number, plantId: number) => {
-    // Store the plant ID for later use
-    const plantIdToUpdate = plantId
-
     try {
-      // Apply visual changes immediately (optimistic UI)
       setRows(
         rows.map((row) => {
           if (row.id === rowId) {
@@ -598,7 +594,6 @@ export default function GardenPlanner({ userId }: { userId: number }) {
 
       await new Promise((resolve) => setTimeout(resolve, 500))
 
-      // Update rows with plant removed
       const updatedRows = rows.map((row) => {
         if (row.id === rowId) {
           const remainingPlants = (row.plants || [])
@@ -624,27 +619,27 @@ export default function GardenPlanner({ userId }: { userId: number }) {
       })
       setRows(updatedRows)
 
-      // Call server action to remove plant
       await removePlantFromRow(plantInstanceId)
 
-      // IMPORTANT: Only update the counts ONCE after server action completes
-      // This is the fix for the double decrement issue
-      setUsageCounts((prevCounts) => ({
-        ...prevCounts,
-        [plantIdToUpdate]: Math.max(0, (prevCounts[plantIdToUpdate] || 0) - 1),
-      }))
+      // Update usage counts once
+      if (!error) {
+        setUsageCounts((prevCounts) => ({
+          ...prevCounts,
+          [plantId]: Math.max(0, (prevCounts[plantId] || 0) - 1),
+        }))
 
-      setPlants((prevPlants) =>
-        prevPlants.map((p) => {
-          if (p.id === plantIdToUpdate) {
-            return {
-              ...p,
-              used_count: Math.max(0, (p.used_count || 0) - 1),
+        setPlants((prevPlants) =>
+          prevPlants.map((p) => {
+            if (p.id === plantId) {
+              return {
+                ...p,
+                used_count: Math.max(0, (p.used_count || 0) - 1),
+              }
             }
-          }
-          return p
-        }),
-      )
+            return p
+          }),
+        )
+      }
 
       animationTimeoutRef.current = setTimeout(() => {
         setRows((rows) =>
