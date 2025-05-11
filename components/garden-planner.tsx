@@ -54,6 +54,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { InstructionsPanel } from "@/components/dashboard/instructions-panel"
 
 // Import server actions
 import {
@@ -862,56 +863,76 @@ export default function GardenPlanner({ userId }: { userId: number }) {
     <div className="container mx-auto py-6 px-4">
       {/* Modern Header with Garden Selector */}
       <header className="mb-4">
-        <div className="flex items-center justify-between gap-4">
-          {/* Garden Selector (Left aligned) */}
-          <div className="flex items-center">
-            {gardens.length > 0 && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex items-center gap-1.5 bg-white dark:bg-gray-900 shadow-sm hover:shadow-md transition-all text-xs"
-                  >
-                    <Home size={14} className="text-primary" />
-                    <span className="font-medium">{currentGardenName}</span>
-                    <ChevronDown size={14} className="text-muted-foreground" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-56">
-                  {gardens.map((garden) => (
-                    <DropdownMenuItem
-                      key={garden.id}
-                      onClick={() => setCurrentGardenId(garden.id)}
-                      className={garden.id === currentGardenId ? "bg-primary/10 text-primary font-medium" : ""}
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+          {/* Three-part layout: Garden Selector | Instructions Panel | View Controls */}
+          <div className="flex items-center justify-between w-full md:w-auto">
+            {/* Garden Selector (Left aligned) */}
+            <div className="flex-shrink-0">
+              {gardens.length > 0 && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex items-center gap-1.5 bg-white dark:bg-gray-900 shadow-sm hover:shadow-md transition-all text-xs"
                     >
-                      {garden.name}
+                      <Home size={14} className="text-primary" />
+                      <span className="font-medium">{currentGardenName}</span>
+                      <ChevronDown size={14} className="text-muted-foreground" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-56">
+                    {gardens.map((garden) => (
+                      <DropdownMenuItem
+                        key={garden.id}
+                        onClick={() => setCurrentGardenId(garden.id)}
+                        className={garden.id === currentGardenId ? "bg-primary/10 text-primary font-medium" : ""}
+                      >
+                        {garden.name}
+                      </DropdownMenuItem>
+                    ))}
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => setIsAddingGarden(true)} className="text-primary">
+                      <Plus size={16} className="mr-2" />
+                      Add New Garden
                     </DropdownMenuItem>
-                  ))}
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => setIsAddingGarden(true)} className="text-primary">
-                    <Plus size={16} className="mr-2" />
-                    Add New Garden
-                  </DropdownMenuItem>
-                  {currentGardenId && gardens.length > 1 && (
-                    <DropdownMenuItem onClick={() => deleteGarden(currentGardenId)} className="text-destructive">
-                      <Trash2 size={16} className="mr-2" />
-                      Delete {currentGardenName}
-                    </DropdownMenuItem>
-                  )}
-                  {currentGardenId && (
-                    <DropdownMenuItem onClick={() => startEditGarden(gardens.find((g) => g.id === currentGardenId)!)}>
-                      <Edit size={16} className="mr-2" />
-                      Rename Garden
-                    </DropdownMenuItem>
-                  )}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
+                    {currentGardenId && gardens.length > 1 && (
+                      <DropdownMenuItem onClick={() => deleteGarden(currentGardenId)} className="text-destructive">
+                        <Trash2 size={16} className="mr-2" />
+                        Delete {currentGardenName}
+                      </DropdownMenuItem>
+                    )}
+                    {currentGardenId && (
+                      <DropdownMenuItem onClick={() => startEditGarden(gardens.find((g) => g.id === currentGardenId)!)}>
+                        <Edit size={16} className="mr-2" />
+                        Rename Garden
+                      </DropdownMenuItem>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+            </div>
+
+            {/* Instructions Panel (Middle) - Only visible on mobile */}
+            <div className="md:hidden">
+              <InstructionsPanel />
+            </div>
+
+            {/* Mobile Menu Button */}
+            <div className="md:hidden flex items-center">
+              <Button variant="ghost" size="icon" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+                {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              </Button>
+            </div>
+          </div>
+
+          {/* Instructions Panel (Middle) - Hidden on mobile */}
+          <div className="hidden md:flex flex-1 justify-left">
+            <InstructionsPanel />
           </div>
 
           {/* View Controls and Logout (Right aligned) */}
-          <div className="flex items-center gap-3">
+          <div className="hidden md:flex items-center gap-3">
             <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as "list" | "grid")}>
               <TabsList className="bg-muted/30">
                 <TooltipProvider>
@@ -945,13 +966,6 @@ export default function GardenPlanner({ userId }: { userId: number }) {
               className="text-muted-foreground hover:text-foreground"
             >
               <LogOut size={18} />
-            </Button>
-          </div>
-
-          {/* Mobile Menu Button */}
-          <div className="md:hidden flex items-center">
-            <Button variant="ghost" size="icon" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
-              {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </Button>
           </div>
         </div>

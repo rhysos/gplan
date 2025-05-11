@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation"
 import { getCurrentUser } from "@/lib/auth"
 import GardenPlanner from "@/components/garden-planner"
-import { InstructionsPanel } from "@/components/dashboard/instructions-panel"
 
 export const dynamic = "force-dynamic"
 
@@ -13,9 +12,7 @@ export default async function DashboardPage() {
   }
 
   return (
-    <div className="container mx-auto py-8">
-      
-      <InstructionsPanel />
+    <div>
       <GardenPlanner userId={user.id} />
     </div>
   )

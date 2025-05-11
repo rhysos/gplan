@@ -17,7 +17,7 @@ export function InstructionsPanel() {
     try {
       if (typeof window !== "undefined" && !initialized.current) {
         initialized.current = true
-        const savedAlwaysHide = localStorage.getItem("instructionsAlwaysHide")
+        const savedAlwaysHide = localStorage.getItem("garden-planner-always-hide-instructions")
         if (savedAlwaysHide !== null) {
           const parsedValue = JSON.parse(savedAlwaysHide)
           setAlwaysHide(parsedValue)
@@ -33,7 +33,7 @@ export function InstructionsPanel() {
   useEffect(() => {
     try {
       if (typeof window !== "undefined" && initialized.current && shouldSave.current) {
-        localStorage.setItem("instructionsAlwaysHide", JSON.stringify(alwaysHide))
+        localStorage.setItem("garden-planner-always-hide-instructions", JSON.stringify(alwaysHide))
         shouldSave.current = false
       }
     } catch (error) {
@@ -59,7 +59,7 @@ export function InstructionsPanel() {
 
   if (!isVisible) {
     return (
-      <div className="mb-1">
+      <div className="mx-2">
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -83,7 +83,7 @@ export function InstructionsPanel() {
   }
 
   return (
-    <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-4 relative">
+    <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mx-2 relative">
       <Button variant="ghost" size="icon" className="absolute top-2 right-2 h-6 w-6" onClick={handleHideClick}>
         <X className="h-4 w-4" />
         <span className="sr-only">Close</span>
@@ -103,7 +103,6 @@ export function InstructionsPanel() {
           <li>Manage your Flower inventory in the "Flowers" tab</li>
           <li>Add Rows to your garden with the "Add Row" button</li>
           <li>Add Flowers to your rows by clicking the "+" button in each row</li>
-          
         </ol>
 
         <p>
