@@ -162,18 +162,7 @@ export default function FlowerManagement({ initialFlowers, usageCounts, userId }
 
   return (
     <div>
-      {envVarsSet === false && (
-        <Alert variant="warning" className="mb-6">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertTitle>Environment Variables Missing</AlertTitle>
-          <AlertDescription>
-            Some required environment variables are not set. Image functionality may be limited.{" "}
-            <Link href="/troubleshoot" className="font-medium underline">
-              Troubleshoot
-            </Link>
-          </AlertDescription>
-        </Alert>
-      )}
+     
 
       <div className="mb-6 flex justify-between items-center">
         <Button onClick={() => setIsAddingFlower(true)}>
