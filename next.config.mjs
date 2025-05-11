@@ -18,8 +18,6 @@ const nextConfig = {
   env: {
     NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME,
   },
-  // Disable PWA/Service Worker features for v0 compatibility
-  pwa: false,
   // Ensure we're not using any workbox configurations
   webpack: (config, { isServer }) => {
     // Return the modified config
