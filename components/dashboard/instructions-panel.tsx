@@ -22,10 +22,10 @@ export function InstructionsPanel({
   onOpenChange,
   imageUrls = {
     // Default placeholder URLs - replace these with your actual URLs when provided
-    gardenSelect: "/garden-selection-interface.png",
-    rowManagement: "/garden-row-management.png",
-    flowerManagement: "/flower-management-interface.png",
-    planting: "/placeholder.svg?key=9mu6d",
+    gardenSelect: "https://res.cloudinary.com/amethyst/image/upload/v1746958869/garden-management-screenshot.png",
+    rowManagement: "https://res.cloudinary.com/amethyst/image/upload/v1746959672/row-management_ijgvdw.png",
+    flowerManagement: "https://res.cloudinary.com/amethyst/image/upload/v1746960053/flower-management_cyihn9.png",
+    planting: "https://res.cloudinary.com/amethyst/image/upload/v1746960386/add-flower-to-row_luhnnf.png",
   },
 }: InstructionsPanelProps) {
   return (
