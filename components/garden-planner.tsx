@@ -25,6 +25,7 @@ import {
   Info,
   Settings,
   Ruler,
+  Lightbulb,
 } from "lucide-react"
 
 // Import UI components
@@ -117,6 +118,9 @@ export default function GardenPlanner({ userId }: { userId: number }) {
   const [isLoading, setIsLoading] = useState(true)
   const [currentGardenId, setCurrentGardenId] = useState<number | null>(null)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+
+  // State for UI controls
+  const [isInstructionsOpen, setIsInstructionsOpen] = useState(false)
 
   // State for rows and plants
   const [rows, setRows] = useState<GardenRow[]>([])
@@ -912,9 +916,17 @@ export default function GardenPlanner({ userId }: { userId: number }) {
               )}
             </div>
 
-            {/* Instructions Panel (Middle) - Only visible on mobile */}
+            {/* Instructions Button (Middle) - Mobile version */}
             <div className="md:hidden">
-              <InstructionsPanel />
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setIsInstructionsOpen(true)}
+                aria-label="Show Instructions"
+                className="h-9 w-9"
+              >
+                <Lightbulb className="h-5 w-5 text-amber-500" />
+              </Button>
             </div>
 
             {/* Mobile Menu Button */}
@@ -925,9 +937,19 @@ export default function GardenPlanner({ userId }: { userId: number }) {
             </div>
           </div>
 
-          {/* Instructions Panel (Middle) - Hidden on mobile */}
+          {/* Instructions Button (Middle) */}
           <div className="hidden md:flex flex-1 justify-left">
-            <InstructionsPanel />
+            <div className="mx-2">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setIsInstructionsOpen(true)}
+                aria-label="Show Instructions"
+                className="h-9 w-9"
+              >
+                <Lightbulb className="h-5 w-5 text-amber-500" />
+              </Button>
+            </div>
           </div>
 
           {/* View Controls and Logout (Right aligned) */}
@@ -1756,6 +1778,9 @@ export default function GardenPlanner({ userId }: { userId: number }) {
           </DialogContent>
         </Dialog>
       )}
+
+      {/* Instructions Modal */}
+      <InstructionsPanel open={isInstructionsOpen} onOpenChange={setIsInstructionsOpen} />
     </div>
   )
 }

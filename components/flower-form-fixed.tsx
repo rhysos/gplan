@@ -32,7 +32,7 @@ export function FlowerForm({
   const [name, setName] = useState(initialFlower?.name || "")
   const [spacing, setSpacing] = useState(initialFlower?.spacing || 30)
   const [imageUrl, setImageUrl] = useState(initialFlower?.image_url || "")
-  const [quantity, setQuantity] = useState(initialFlower?.quantity || 10)
+  const [quantity, setQuantity] = useState(initialFlower?.quantity || 1)
   const [activeTab, setActiveTab] = useState<string>("url")
 
   // Reset form when initialFlower changes
@@ -41,7 +41,7 @@ export function FlowerForm({
       setName(initialFlower.name || "")
       setSpacing(initialFlower.spacing || 30)
       setImageUrl(initialFlower.image_url || "")
-      setQuantity(initialFlower.quantity || 10)
+      setQuantity(initialFlower.quantity || 1)
     }
   }, [initialFlower])
 
@@ -61,7 +61,7 @@ export function FlowerForm({
       setName("")
       setSpacing(30)
       setImageUrl("")
-      setQuantity(10)
+      setQuantity(1)
       setActiveTab("url")
     }
   }
@@ -109,7 +109,7 @@ export function FlowerForm({
                 <Input
                   id="flower-spacing"
                   type="number"
-                  min="10"
+                  min="5"
                   max="100"
                   value={spacing}
                   onChange={(e) => setSpacing(Number(e.target.value))}
@@ -127,7 +127,7 @@ export function FlowerForm({
                 type="number"
                 min="0"
                 value={quantity}
-                onChange={(e) => setQuantity(Number.parseInt(e.target.value) || 0)}
+                onChange={(e) => setQuantity(Number.parseInt(e.target.value) || 1)}
                 placeholder="e.g., 10"
                 required
               />
