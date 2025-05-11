@@ -194,7 +194,7 @@ export default function GardenPlanner({ userId }: { userId: number }) {
 
         const plantsWithCounts = allPlants.map((plant) => ({
           ...plant,
-          quantity: plant.quantity || 10,
+          quantity: plant.quantity || 1,
           used_count: counts[plant.id] || 0,
         }))
 

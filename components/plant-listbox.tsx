@@ -73,7 +73,7 @@ export function PlantListbox({ plants, selectedPlantId, onSelectPlant }: PlantLi
             <CommandEmpty>No flowers found.</CommandEmpty>
             <CommandGroup className="max-h-[300px] overflow-y-auto">
               {plants.map((plant) => {
-                const quantity = plant.quantity || 10 // Default to 10 if not set
+                const quantity = plant.quantity || 1 // Default to 10 if not set
                 const usedCount = plant.used_count || 0
                 const available = quantity - usedCount
 
