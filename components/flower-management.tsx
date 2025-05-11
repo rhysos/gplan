@@ -172,7 +172,7 @@ export default function FlowerManagement({ initialFlowers, usageCounts, userId }
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
         {flowers.map((flower) => {
-          const quantity = flower.quantity || 10 // Default to 10 if not set
+          const quantity = flower.quantity || 1 // Default to 10 if not set
           const available = quantity - (flower.used_count || 0)
           return (
             <Card key={flower.id} className="overflow-hidden flex flex-col">

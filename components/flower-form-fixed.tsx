@@ -6,13 +6,11 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Slider } from "@/components/ui/slider"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ImageUrlInput } from "@/components/image-url-input"
 import { FileUpload } from "@/components/file-upload"
 import { CloudinaryImage } from "@/components/cloudinary-image"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
-import { ScrollArea } from "@/components/ui/scroll-area"
 
 interface FlowerFormProps {
   open: boolean
@@ -90,31 +88,6 @@ export function FlowerForm({
 
         {/* Main content with native scrolling */}
         <div className="overflow-y-auto max-h-[60vh] pr-2 my-4 custom-scrollbar">
-          {plants && plants.length > 0 && (
-            <div className="mb-4">
-              <Label>Available Plants</Label>
-              <ScrollArea className="h-72 rounded-md border">
-                <div className="p-4">
-                  {plants.map((plant) => (
-                    <div key={plant.id} className="flex items-center space-x-2 mb-2">
-                      <Button
-                        variant="outline"
-                        className="w-full justify-start"
-                        onClick={() => {
-                          setName(plant.name)
-                          setSpacing(plant.spacing)
-                          setImageUrl(plant.image_url)
-                          setQuantity(plant.quantity || 10)
-                        }}
-                      >
-                        {plant.name} ({plant.quantity || 10} available)
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              </ScrollArea>
-            </div>
-          )}
           <form id="flower-form" onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="flower-name">Flower Name</Label>
@@ -128,18 +101,22 @@ export function FlowerForm({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="flower-spacing">Spacing (cm)</Label>
-              <div className="flex items-center gap-4">
-                <Slider
+              <div className="flex justify-between items-center">
+                <Label htmlFor="flower-spacing">Spacing (cm)</Label>
+                <span className="text-sm text-muted-foreground">{(spacing / 100).toFixed(2)} m</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Input
                   id="flower-spacing"
-                  value={[spacing]}
-                  onValueChange={(value) => setSpacing(value[0])}
-                  min={10}
-                  max={100}
-                  step={1}
+                  type="number"
+                  min="10"
+                  max="100"
+                  value={spacing}
+                  onChange={(e) => setSpacing(Number(e.target.value))}
+                  onClick={(e) => e.currentTarget.select()}
                   className="flex-1"
                 />
-                <span className="w-12 text-right">{spacing} cm</span>
+                <span className="text-sm">cm</span>
               </div>
             </div>
 

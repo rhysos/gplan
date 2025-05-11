@@ -40,7 +40,6 @@ import {
   DialogTrigger,
   DialogFooter,
 } from "@/components/ui/dialog"
-import { Slider } from "@/components/ui/slider"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -959,14 +958,21 @@ export default function GardenPlanner({ userId }: { userId: number }) {
               </TabsList>
             </Tabs>
 
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleLogout}
-              className="text-muted-foreground hover:text-foreground"
-            >
-              <LogOut size={18} />
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleLogout}
+                    className="text-muted-foreground hover:text-foreground"
+                  >
+                    <LogOut size={18} />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Logout</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
         </div>
 
@@ -1140,20 +1146,19 @@ export default function GardenPlanner({ userId }: { userId: number }) {
                         />
                       </div>
                       <div className="grid gap-2">
-                        <div className="flex justify-between">
-                          <Label htmlFor="row-length">Row Length</Label>
-                          <span className="text-sm text-muted-foreground">
-                            {newRowLength} cm ({(newRowLength / 100).toFixed(1)} m)
-                          </span>
+                        <div className="flex justify-between items-center">
+                          <Label htmlFor="row-length">Row Length (cm)</Label>
+                          <span className="text-sm text-muted-foreground">{(newRowLength / 100).toFixed(1)} m</span>
                         </div>
-                        <Slider
+                        <Input
                           id="row-length"
-                          value={[newRowLength]}
-                          onValueChange={(value) => setNewRowLength(value[0])}
-                          min={30}
-                          max={2000}
-                          step={10}
-                          className="flex-1"
+                          type="number"
+                          min="30"
+                          max="2000"
+                          value={newRowLength}
+                          onChange={(e) => setNewRowLength(Number(e.target.value))}
+                          onClick={(e: React.MouseEvent<HTMLInputElement>) => e.currentTarget.select()}
+                          placeholder="e.g., 240"
                         />
                       </div>
                       <div className="grid gap-2">
@@ -1699,20 +1704,19 @@ export default function GardenPlanner({ userId }: { userId: number }) {
                 />
               </div>
               <div className="grid gap-2">
-                <div className="flex justify-between">
-                  <Label htmlFor="edit-row-length">Row Length</Label>
-                  <span className="text-sm text-muted-foreground">
-                    {editingRow.length} cm ({(editingRow.length / 100).toFixed(1)} m)
-                  </span>
+                <div className="flex justify-between items-center">
+                  <Label htmlFor="edit-row-length">Row Length (cm)</Label>
+                  <span className="text-sm text-muted-foreground">{(editingRow.length / 100).toFixed(1)} m</span>
                 </div>
-                <Slider
+                <Input
                   id="edit-row-length"
-                  value={[editingRow.length]}
-                  onValueChange={(value) => setEditingRow({ ...editingRow, length: value[0] })}
-                  min={30}
-                  max={2000}
-                  step={10}
-                  className="flex-1"
+                  type="number"
+                  min="30"
+                  max="2000"
+                  value={editingRow.length}
+                  onChange={(e) => setEditingRow({ ...editingRow, length: Number(e.target.value) })}
+                  onClick={(e: React.MouseEvent<HTMLInputElement>) => e.currentTarget.select()}
+                  placeholder="e.g., 240"
                 />
               </div>
               <div className="grid gap-2">

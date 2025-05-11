@@ -1,56 +1,15 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState } from "react"
 import { X, Lightbulb } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 export function InstructionsPanel() {
-  const [isVisible, setIsVisible] = useState(true)
-  const [alwaysHide, setAlwaysHide] = useState(false)
-  const initialized = useRef(false)
-  const shouldSave = useRef(false)
-
-  // Load preferences from localStorage on mount
-  useEffect(() => {
-    try {
-      if (typeof window !== "undefined" && !initialized.current) {
-        initialized.current = true
-        const savedAlwaysHide = localStorage.getItem("garden-planner-always-hide-instructions")
-        if (savedAlwaysHide !== null) {
-          const parsedValue = JSON.parse(savedAlwaysHide)
-          setAlwaysHide(parsedValue)
-          setIsVisible(!parsedValue)
-        }
-      }
-    } catch (error) {
-      console.error("Error loading instructions panel preferences:", error)
-    }
-  }, [])
-
-  // Save preferences to localStorage when they change
-  useEffect(() => {
-    try {
-      if (typeof window !== "undefined" && initialized.current && shouldSave.current) {
-        localStorage.setItem("garden-planner-always-hide-instructions", JSON.stringify(alwaysHide))
-        shouldSave.current = false
-      }
-    } catch (error) {
-      console.error("Error saving instructions panel preferences:", error)
-    }
-  }, [alwaysHide])
+  const [isVisible, setIsVisible] = useState(false)
 
   const handleHideClick = () => {
     setIsVisible(false)
-  }
-
-  const handleAlwaysHideChange = (checked: boolean) => {
-    setAlwaysHide(checked)
-    shouldSave.current = true
-    if (checked) {
-      setIsVisible(false)
-    }
   }
 
   const handleShowClick = () => {
@@ -116,16 +75,6 @@ export function InstructionsPanel() {
           <li>The interface will tell you how much space used and warn you when a flower doesn't fit</li>
           <li>The visualization shows how your garden will look</li>
         </ul>
-      </div>
-
-      <div className="flex items-center space-x-2">
-        <Checkbox id="always-hide" checked={alwaysHide} onCheckedChange={handleAlwaysHideChange} />
-        <label
-          htmlFor="always-hide"
-          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-        >
-          Always hide instructions
-        </label>
       </div>
     </div>
   )

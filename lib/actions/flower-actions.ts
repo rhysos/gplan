@@ -25,7 +25,7 @@ export async function getAllFlowers(userId: number) {
         // Add default quantity value
         return plants.map((plant) => ({
           ...plant,
-          quantity: 10, // Default quantity
+          quantity: 1, // Default quantity
         }))
       }
       throw error
@@ -63,7 +63,7 @@ export async function getFlowersWithUsage() {
         // Add default quantity value
         return flowers.map((flower) => ({
           ...flower,
-          quantity: 10, // Default quantity
+          quantity: 1, // Default quantity
         }))
       }
       throw error
@@ -188,7 +188,7 @@ export async function addQuantityColumn() {
       if (error instanceof Error && error.message.includes('column "quantity" does not exist')) {
         console.log("Adding quantity column to plants table")
         // Add the column
-        await sql`ALTER TABLE plants ADD COLUMN quantity INTEGER DEFAULT 10 NOT NULL`
+        await sql`ALTER TABLE plants ADD COLUMN quantity INTEGER DEFAULT 1 NOT NULL`
         return { success: true, message: "Quantity column added successfully" }
       }
       throw error
