@@ -1,30 +1,23 @@
 "use client"
 
-import type React from "react"
-
 // Import necessary React hooks and utilities
 import { useState, useEffect, useCallback, useMemo, useRef } from "react"
 import { useRouter } from "next/navigation"
-import { Plus, Save, Home, AlertTriangle, Info } from "lucide-react"
+import { Plus, Home } from "lucide-react"
 
 // Import UI components
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog"
 import { useToast } from "@/hooks/use-toast"
 import { InstructionsPanel } from "@/components/dashboard/instructions-panel"
 import { GardenPlannerHeader } from "@/components/garden-planner-header"
 import { GardenRows } from "@/components/garden-rows"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { Badge } from "@/components/ui/badge"
+
+// Import dialog components
+import { AddGardenDialog } from "@/components/dialogs/add-garden-dialog"
+import { EditGardenDialog } from "@/components/dialogs/edit-garden-dialog"
+import { AddRowDialog } from "@/components/dialogs/add-row-dialog"
+import { EditRowDialog } from "@/components/dialogs/edit-row-dialog"
+import { AddPlantDialog } from "@/components/dialogs/add-plant-dialog"
 
 // Import server actions
 import {
@@ -853,65 +846,20 @@ export default function GardenPlanner({ userId }: { userId: number }) {
       />
 
       {/* Add Garden Dialog */}
-      <Dialog open={isAddingGarden} onOpenChange={setIsAddingGarden}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Create New Garden</DialogTitle>
-            <DialogDescription>Give your garden a name to help you organize your planting plans.</DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="garden-name">Garden Name</Label>
-              <Input
-                id="garden-name"
-                value={newGardenName}
-                onChange={(e) => setNewGardenName(e.target.value)}
-                placeholder="e.g., Backyard Garden"
-                className="col-span-3"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsAddingGarden(false)}>
-              Cancel
-            </Button>
-            <Button onClick={addGarden} className="bg-primary hover:bg-primary/90">
-              Create Garden
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <AddGardenDialog
+        open={isAddingGarden}
+        onOpenChange={setIsAddingGarden}
+        newGardenName={newGardenName}
+        setNewGardenName={setNewGardenName}
+        addGarden={addGarden}
+      />
 
       {/* Edit Garden Dialog */}
-      {editingGarden && (
-        <Dialog open={!!editingGarden} onOpenChange={(open) => !open && setEditingGarden(null)}>
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle>Rename Garden</DialogTitle>
-              <DialogDescription>Update the name of your garden.</DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid gap-2">
-                <Label htmlFor="edit-garden-name">Garden Name</Label>
-                <Input
-                  id="edit-garden-name"
-                  value={editingGarden.name}
-                  onChange={(e) => setEditingGarden({ ...editingGarden, name: e.target.value })}
-                  className="col-span-3"
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setEditingGarden(null)}>
-                Cancel
-              </Button>
-              <Button onClick={saveGardenEdit} className="bg-primary hover:bg-primary/90">
-                <Save size={16} className="mr-2" /> Save Changes
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      )}
+      <EditGardenDialog
+        editingGarden={editingGarden}
+        setEditingGarden={setEditingGarden}
+        saveGardenEdit={saveGardenEdit}
+      />
 
       {/* No Gardens State */}
       {gardens.length === 0 ? (
@@ -956,183 +904,37 @@ export default function GardenPlanner({ userId }: { userId: number }) {
         />
       )}
 
-      {/* Add Plant Dialog */}
-      <Dialog
-        open={isAddPlantDialogOpen}
-        onOpenChange={(open) => {
-          setIsAddPlantDialogOpen(open)
-          if (!open) {
-            setAddingPlantToRowId(null)
-            setSelectedPlant(null)
-          }
-        }}
-      >
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Add Flower to Row</DialogTitle>
-            <DialogDescription>
-              Select a flower to add to {rows.find((r) => r.id === addingPlantToRowId)?.name || "this row"}.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="py-4">
-            <Label htmlFor="plant-select" className="mb-2 block">
-              Select a flower:
-            </Label>
-            <div className="h-[300px] rounded-md border overflow-y-auto p-1">
-              {plants.map((plant) => {
-                // Calculate availability
-                const quantity = plant.quantity || 0
-                const usedCount = usageCounts[plant.id] || 0
-                const available = quantity - usedCount
-
-                // Check if plant would fit in the row
-                const canFit = addingPlantToRowId
-                  ? wouldPlantFit(rows.find((r) => r.id === addingPlantToRowId)!, plant)
-                  : true
-
-                const isDisabled = available <= 0 || !canFit
-                const isSelected = selectedPlant === plant.id
-
-                return (
-                  <div
-                    key={plant.id}
-                    onClick={() => {
-                      if (!isDisabled && !addingPlantLoading) {
-                        setSelectedPlant(plant.id)
-                      }
-                    }}
-                    className={`flex items-center gap-3 p-3 my-1 rounded-md cursor-pointer transition-colors ${
-                      isDisabled ? "opacity-50 cursor-not-allowed" : "hover:bg-muted/50"
-                    } ${isSelected ? "bg-primary/10 border border-primary/30" : "border border-transparent"}`}
-                  >
-                    <div className="w-12 h-12 rounded-md overflow-hidden flex-shrink-0">
-                      <img
-                        src={plant.image_url || "/placeholder.svg"}
-                        alt={plant.name}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div className="flex-1 overflow-hidden">
-                      <div className="flex justify-between items-center">
-                        <span className="font-medium truncate">{plant.name}</span>
-                        <Badge variant={available > 0 ? "outline" : "destructive"} className="ml-2">
-                          {available} left
-                        </Badge>
-                      </div>
-                      <div className="text-xs text-muted-foreground">Spacing: {plant.spacing} cm</div>
-                    </div>
-                    {!canFit && (
-                      <div className="text-amber-500 flex items-center text-xs whitespace-nowrap">
-                        <AlertTriangle className="h-3 w-3 mr-1" />
-                        Won't fit
-                      </div>
-                    )}
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsAddPlantDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button
-              onClick={() => {
-                if (selectedPlant && addingPlantToRowId && !addingPlantLoading) {
-                  addPlantToRow(addingPlantToRowId)
-                }
-              }}
-              disabled={!selectedPlant || addingPlantLoading}
-              className="bg-primary hover:bg-primary/90"
-            >
-              {addingPlantLoading ? (
-                <>
-                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-t-transparent mr-2" />
-                  Adding...
-                </>
-              ) : (
-                <>Add Flower</>
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Add Row Dialog */}
+      <AddRowDialog
+        open={isAddingRow}
+        onOpenChange={setIsAddingRow}
+        newRowName={newRowName}
+        setNewRowName={setNewRowName}
+        newRowLength={newRowLength}
+        setNewRowLength={setNewRowLength}
+        newRowEnds={newRowEnds}
+        setNewRowEnds={setNewRowEnds}
+        addRow={addRow}
+      />
 
       {/* Edit Row Dialog */}
-      {editingRow && (
-        <Dialog open={!!editingRow} onOpenChange={(open) => !open && setEditingRow(null)}>
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle>Edit Row</DialogTitle>
-              <DialogDescription>Update the details of your garden row.</DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid gap-2">
-                <Label htmlFor="edit-row-name">Row Name</Label>
-                <Input
-                  id="edit-row-name"
-                  value={editingRow.name}
-                  onChange={(e) => setEditingRow({ ...editingRow, name: e.target.value })}
-                />
-              </div>
-              <div className="grid gap-2">
-                <div className="flex justify-between items-center">
-                  <Label htmlFor="edit-row-length">Row Length (cm)</Label>
-                  <span className="text-sm text-muted-foreground">{(editingRow.length / 100).toFixed(1)} m</span>
-                </div>
-                <Input
-                  id="edit-row-length"
-                  type="number"
-                  min="30"
-                  max="2000"
-                  value={editingRow.length}
-                  onChange={(e) => setEditingRow({ ...editingRow, length: Number(e.target.value) })}
-                  onClick={(e: React.MouseEvent<HTMLInputElement>) => e.currentTarget.select()}
-                  placeholder="e.g., 240"
-                />
-              </div>
-              <div className="grid gap-2">
-                <div className="flex  240" />
-              </div>
-              <div className="grid gap-2">
-                <div className="flex justify-between items-center">
-                  <Label htmlFor="edit-row-ends">Row Ends</Label>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-6 w-6">
-                          <Info size={14} />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p className="max-w-xs">Space from the edge to the first/last plant in the row</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                </div>
-                <Input
-                  id="edit-row-ends"
-                  type="number"
-                  min="0"
-                  value={editingRow.row_ends || 0}
-                  onChange={(e) => setEditingRow({ ...editingRow, row_ends: Number(e.target.value) })}
-                  placeholder="e.g., 10"
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setEditingRow(null)}>
-                Cancel
-              </Button>
-              <Button onClick={saveRowEdit} className="bg-primary hover:bg-primary/90">
-                <Save size={16} className="mr-2" /> Save Changes
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      )}
+      <EditRowDialog editingRow={editingRow} setEditingRow={setEditingRow} saveRowEdit={saveRowEdit} />
+
+      {/* Add Plant Dialog */}
+      <AddPlantDialog
+        open={isAddPlantDialogOpen}
+        onOpenChange={setIsAddPlantDialogOpen}
+        plants={plants}
+        rows={rows}
+        selectedPlant={selectedPlant}
+        setSelectedPlant={setSelectedPlant}
+        addingPlantToRowId={addingPlantToRowId}
+        setAddingPlantToRowId={setAddingPlantToRowId}
+        addingPlantLoading={addingPlantLoading}
+        usageCounts={usageCounts}
+        wouldPlantFit={wouldPlantFit}
+        addPlantToRow={addPlantToRow}
+      />
 
       {/* Instructions Modal */}
       <InstructionsPanel open={isInstructionsOpen} onOpenChange={setIsInstructionsOpen} />
