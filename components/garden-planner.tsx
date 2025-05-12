@@ -864,7 +864,20 @@ export default function GardenPlanner({ userId }: { userId: number }) {
 
   // Main component render
   return (
-    
+    <GardenPlannerHeader
+  gardens={gardens}
+  currentGardenId={currentGardenId}
+  setCurrentGardenId={setCurrentGardenId}
+  setIsAddingGarden={setIsAddingGarden}
+  startEditGarden={startEditGarden}
+  deleteGarden={deleteGarden}
+  handleLogout={handleLogout}
+  viewMode={viewMode}
+  setViewMode={setViewMode}
+  isMobileMenuOpen={isMobileMenuOpen}
+  setIsMobileMenuOpen={setIsMobileMenuOpen}
+  setIsInstructionsOpen={setIsInstructionsOpen}
+/>
        {/* Add Garden Dialog */}
       <Dialog open={isAddingGarden} onOpenChange={setIsAddingGarden}>
         <DialogContent className="sm:max-w-md">
