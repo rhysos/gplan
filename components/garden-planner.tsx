@@ -864,6 +864,7 @@ export default function GardenPlanner({ userId }: { userId: number }) {
 
   // Main component render
   return (
+    <>
     <GardenPlannerHeader
   gardens={gardens}
   currentGardenId={currentGardenId}
@@ -876,9 +877,8 @@ export default function GardenPlanner({ userId }: { userId: number }) {
   setViewMode={setViewMode}
   isMobileMenuOpen={isMobileMenuOpen}
   setIsMobileMenuOpen={setIsMobileMenuOpen}
-  setIsInstructionsOpen={setIsInstructionsOpen}
-/>
-       {/* Add Garden Dialog */}
+  setIsInstructionsOpen={setIsInstructionsOpen} />
+      {/* Add Garden Dialog */}
       <Dialog open={isAddingGarden} onOpenChange={setIsAddingGarden}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -938,6 +938,7 @@ export default function GardenPlanner({ userId }: { userId: number }) {
           </DialogContent>
         </Dialog>
       )}
+    </>
 
       {/* No Gardens State */}
       {gardens.length === 0 ? (
