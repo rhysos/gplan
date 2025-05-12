@@ -514,13 +514,6 @@ export async function deletePlantInstance(instanceId: number) {
       AND position > ${position}
     `
 
-    // Increment the quantity of the removed plant
-    await sql`
-      UPDATE plants
-      SET quantity = quantity + 1
-      WHERE id = ${plant_id}
-    `
-
     // Finally delete the plant instance
     await sql`
       DELETE FROM plant_instances

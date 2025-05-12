@@ -346,19 +346,20 @@ export function useRows(gardenId: number | null, updatePlantUsage: (plantId: num
 
         // If there's only one plant, just add its spacing
         if (sortedPlants.length === 1) {
-          totalSpace += sortedPlants[0].spacing
-          console.log(`Only one plant, adding its spacing (${sortedPlants[0].spacing}mm), total space: ${totalSpace}mm`)
+          // We've already added row_ends to totalSpace, so no need to add anything more
+          console.log(`Only one plant, space used is just the row ends: ${totalSpace}mm`)
         } else if (sortedPlants.length > 1) {
           // For multiple plants, calculate the total space they occupy
           const firstPlant = sortedPlants[0]
           const lastPlant = sortedPlants[sortedPlants.length - 1]
 
-          // The total space is: (last plant position + its spacing) - first plant position + row ends
+          // The total space is: last plant position - first plant position + row ends
           // Since we've already added row ends, we just need the plant space
-          const plantsSpace = lastPlant.position + lastPlant.spacing - firstPlant.position
+          // IMPORTANT: We do NOT add the last plant's spacing as row ends accounts for it
+          const plantsSpace = lastPlant.position - firstPlant.position
           totalSpace += plantsSpace
           console.log(
-            `Multiple plants, first plant position: ${firstPlant.position}mm, last plant position: ${lastPlant.position}mm, last plant spacing: ${lastPlant.spacing}mm`,
+            `Multiple plants, first plant position: ${firstPlant.position}mm, last plant position: ${lastPlant.position}mm`,
           )
           console.log(`Plants space: ${plantsSpace}mm, total space: ${totalSpace}mm`)
         }
