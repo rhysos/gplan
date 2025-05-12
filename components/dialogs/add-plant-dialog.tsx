@@ -1,6 +1,6 @@
 "use client"
 
-import { AlertTriangle } from "lucide-react"
+import { AlertTriangle, Info } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import {
@@ -12,24 +12,9 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
-
-interface Plant {
-  id: number
-  name: string
-  spacing: number
-  image_url: string
-  quantity?: number
-  used_count?: number
-}
-
-interface GardenRow {
-  id: number
-  name: string
-  length: number
-  row_ends: number
-  plants?: any[]
-  isActive?: boolean
-}
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import type { Plant } from "@/hooks/usePlants"
+import type { GardenRow } from "@/hooks/useRows"
 
 interface AddPlantDialogProps {
   open: boolean
@@ -43,7 +28,7 @@ interface AddPlantDialogProps {
   addingPlantLoading: number | null
   usageCounts: Record<number, number>
   wouldPlantFit: (row: GardenRow, plant: Plant) => boolean
-  addPlantToRow: (rowId: number) => Promise<void>
+  addPlantToRow: () => void
 }
 
 export function AddPlantDialog({
@@ -67,6 +52,49 @@ export function AddPlantDialog({
   }
 
   const currentRow = rows.find((r) => r.id === addingPlantToRowId)
+  const selectedPlantData = selectedPlant ? plants.find((p) => p.id === selectedPlant) : null
+
+  // Calculate position preview for the selected plant
+  const getPositionPreview = () => {
+    try {
+      if (!currentRow || !selectedPlantData) {
+        console.log("Cannot calculate position preview: missing row or plant data")
+        return null
+      }
+
+      console.log(`Calculating position preview for ${selectedPlantData.name} in row ${currentRow.name}`)
+
+      const rowPlants = currentRow.plants || []
+      if (rowPlants.length === 0) {
+        const position = currentRow.row_ends || 0
+        console.log(`No existing plants, position preview after row end: ${position}mm`)
+        return position
+      }
+
+      const sortedPlants = [...rowPlants].sort((a, b) => a.position - b.position)
+      const lastPlant = sortedPlants[sortedPlants.length - 1]
+      console.log(
+        `Last plant in row: ${lastPlant.name} at position ${lastPlant.position}mm with spacing ${lastPlant.spacing}mm`,
+      )
+
+      // The spacing between plants is the maximum of the two plants' spacing requirements
+      const spacingBetween = Math.max(lastPlant.spacing, selectedPlantData.spacing)
+      console.log(
+        `Max spacing between plants: ${spacingBetween}mm (max of ${lastPlant.spacing}mm and ${selectedPlantData.spacing}mm)`,
+      )
+
+      // The next position is the last plant's position plus the spacing between
+      const nextPosition = lastPlant.position + spacingBetween
+      console.log(`Calculated position preview: ${nextPosition}mm`)
+
+      return nextPosition
+    } catch (error) {
+      console.error("Error calculating position preview:", error)
+      return null
+    }
+  }
+
+  const positionPreview = getPositionPreview()
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -77,6 +105,60 @@ export function AddPlantDialog({
         </DialogHeader>
 
         <div className="py-4">
+          {currentRow && (
+            <div className="mb-4 p-3 bg-muted/20 rounded-md">
+              <h4 className="text-sm font-medium mb-1">Row Information</h4>
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div>
+                  Length: <span className="font-medium">{currentRow.length} cm</span>
+                </div>
+                <div>
+                  Row Ends: <span className="font-medium">{currentRow.row_ends} cm (each side)</span>
+                </div>
+                <div>
+                  Plants: <span className="font-medium">{currentRow.plants?.length || 0}</span>
+                </div>
+                {selectedPlantData && positionPreview !== null && (
+                  <div>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger className="flex items-center">
+                          Position Preview: <span className="font-medium ml-1">{positionPreview} cm</span>
+                          <Info className="h-3 w-3 ml-1 text-muted-foreground" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p className="text-xs max-w-xs">
+                            This is where the selected plant will be positioned, based on the max spacing rule.
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
+                )}
+              </div>
+
+              {selectedPlantData && currentRow.plants && currentRow.plants.length > 0 && (
+                <div className="mt-2 text-xs text-muted-foreground">
+                  <p>
+                    <strong>Spacing Rule:</strong> The space between plants is the maximum of their spacing
+                    requirements.
+                  </p>
+                  {positionPreview !== null && (
+                    <p className="mt-1">
+                      Last plant ({currentRow.plants[currentRow.plants.length - 1].name}) spacing:{" "}
+                      {currentRow.plants[currentRow.plants.length - 1].spacing} cm
+                      <br />
+                      Selected plant ({selectedPlantData.name}) spacing: {selectedPlantData.spacing} cm
+                      <br />
+                      <strong>Max spacing used:</strong>{" "}
+                      {Math.max(currentRow.plants[currentRow.plants.length - 1].spacing, selectedPlantData.spacing)} cm
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
           <Label htmlFor="plant-select" className="mb-2 block">
             Select a flower:
           </Label>
@@ -138,11 +220,7 @@ export function AddPlantDialog({
             Cancel
           </Button>
           <Button
-            onClick={() => {
-              if (selectedPlant && addingPlantToRowId && !addingPlantLoading) {
-                addPlantToRow(addingPlantToRowId)
-              }
-            }}
+            onClick={addPlantToRow}
             disabled={!selectedPlant || addingPlantLoading}
             className="bg-primary hover:bg-primary/90"
           >

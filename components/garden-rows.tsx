@@ -283,11 +283,26 @@ export function GardenRows({
                     <div className="flex justify-between items-center mb-1">
                       <span className="text-sm font-medium">Space Usage</span>
                       <Badge variant={isNearlyFull ? "destructive" : "outline"} className="text-xs">
-                        {usedPercentage}%
+                        {(() => {
+                          try {
+                            const percentage = calculateUsedPercentage(row)
+                            return `${percentage}%`
+                          } catch (error) {
+                            console.error(`Error calculating percentage for row ${row.id}:`, error)
+                            return "Error"
+                          }
+                        })()}
                       </Badge>
                     </div>
                     <Progress
-                      value={usedPercentage}
+                      value={(() => {
+                        try {
+                          return calculateUsedPercentage(row)
+                        } catch (error) {
+                          console.error(`Error calculating progress value for row ${row.id}:`, error)
+                          return 0
+                        }
+                      })()}
                       className="h-2"
                       indicatorClassName={isNearlyFull ? "bg-destructive" : "bg-primary"}
                     />
