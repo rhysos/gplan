@@ -57,9 +57,9 @@ export default function SignupPage() {
           <Image
             src="https://res.cloudinary.com/amethyst/image/upload/v1747118085/bloomsinrows_iya38x.png"
             alt="Blooms In Rows"
-            width={220}
-            height={60}
-            className="h-12 w-auto"
+            width={280}
+            height={80}
+            className="h-14 sm:h-16 w-auto"
             priority
             unoptimized
           />

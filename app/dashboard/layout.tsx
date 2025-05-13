@@ -25,9 +25,9 @@ export default function DashboardLayout({
             <Image
               src="https://res.cloudinary.com/amethyst/image/upload/v1747118085/bloomsinrows_iya38x.png"
               alt="Blooms In Rows"
-              width={180}
-              height={50}
-              className="h-8 sm:h-10 w-auto object-contain"
+              width={240}
+              height={70}
+              className="h-10 sm:h-12 md:h-14 w-auto object-contain"
               priority
               unoptimized
             />
