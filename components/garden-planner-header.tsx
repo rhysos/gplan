@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import Image from "next/image"
 
 interface Garden {
   id: number
@@ -184,6 +185,15 @@ export function GardenPlannerHeader({
           </TooltipProvider>
         </div>
       </div>
+      <Image
+        src="https://res.cloudinary.com/amethyst/image/upload/v1747118085/bloomsinrows_iya38x.png"
+        alt="Blooms In Rows"
+        width={320}
+        height={90}
+        className="h-12 sm:h-16 md:h-20 w-auto"
+        priority
+        unoptimized
+      />
 
       {/* Mobile Navigation */}
       {isMobileMenuOpen && (

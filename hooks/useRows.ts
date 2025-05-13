@@ -52,6 +52,8 @@ export function useRows(gardenId: number | null, updatePlantUsage: (plantId: num
 
   // Add this at the top of the hook, outside any function
   const calculationDepthRef = useRef<Record<string, number>>({})
+  const usedSpaceCache = useRef<Record<string, number>>({})
+  const usedPercentageCache = useRef<Record<string, number>>({})
 
   // Clean up any animation timeouts when component unmounts
   useEffect(() => {
@@ -117,6 +119,9 @@ export function useRows(gardenId: number | null, updatePlantUsage: (plantId: num
 
       console.log(`Finished loading all rows with plants`)
       setRows(rowsWithPlants)
+
+      // Clear caches when loading new data
+      clearUsedSpaceCache()
     } catch (error) {
       console.error(`Error in loadRows:`, error)
       toast({
@@ -129,14 +134,21 @@ export function useRows(gardenId: number | null, updatePlantUsage: (plantId: num
     }
   }, [gardenId, toast])
 
+  // Add this function to clear the cache
+  const clearUsedSpaceCache = useCallback(() => {
+    usedSpaceCache.current = {}
+    usedPercentageCache.current = {}
+  }, [])
+
   // Call loadRows when gardenId changes
   useEffect(() => {
     if (gardenId) {
       loadRows()
     } else {
       setRows([])
+      clearUsedSpaceCache()
     }
-  }, [gardenId, loadRows])
+  }, [gardenId, loadRows, clearUsedSpaceCache])
 
   // Row Management Functions
   const addRow = async () => {
@@ -146,6 +158,7 @@ export function useRows(gardenId: number | null, updatePlantUsage: (plantId: num
       const newRow = await createGardenRow(gardenId, newRowName, newRowLength, newRowEnds)
 
       setRows([...rows, { ...newRow, plants: [] }])
+      clearUsedSpaceCache()
 
       setNewRowName("")
       setNewRowLength(240)
@@ -170,6 +183,7 @@ export function useRows(gardenId: number | null, updatePlantUsage: (plantId: num
       await deleteGardenRow(rowId)
 
       setRows(rows.filter((row) => row.id !== rowId))
+      clearUsedSpaceCache()
 
       toast({
         title: "Row deleted",
@@ -195,6 +209,7 @@ export function useRows(gardenId: number | null, updatePlantUsage: (plantId: num
       const updatedRow = await updateGardenRow(editingRow.id, editingRow.name, editingRow.length, editingRow.row_ends)
 
       setRows(rows.map((row) => (row.id === editingRow.id ? { ...updatedRow, plants: row.plants } : row)))
+      clearUsedSpaceCache()
       setEditingRow(null)
 
       toast({
@@ -252,6 +267,12 @@ export function useRows(gardenId: number | null, updatePlantUsage: (plantId: num
   // Calculate used space in a row
   const calculateUsedSpace = useCallback(
     (row: GardenRow, newPlant?: Plant): number => {
+      // If we're not checking a new plant and we have a cached value, use it
+      const cacheKey = `row-${row.id}-${row.plants?.length || 0}`
+      if (!newPlant && usedSpaceCache.current[cacheKey] !== undefined) {
+        return usedSpaceCache.current[cacheKey]
+      }
+
       // Add a guard to prevent infinite loops
       const calculationId = `row-${row.id}`
       calculationDepthRef.current[calculationId] = (calculationDepthRef.current[calculationId] || 0) + 1
@@ -282,6 +303,7 @@ export function useRows(gardenId: number | null, updatePlantUsage: (plantId: num
           // If there are no plants and we're not checking a new plant, just return row ends
           if (!newPlant) {
             console.log(`No plants in row, total space: ${totalSpace}mm`)
+            usedSpaceCache.current[cacheKey] = totalSpace
             return totalSpace
           }
 
@@ -367,6 +389,10 @@ export function useRows(gardenId: number | null, updatePlantUsage: (plantId: num
         console.log(`Final calculated space for row ${row.id}: ${totalSpace}mm (calculation ${calculationId} complete)`)
         // Reset calculation depth
         calculationDepthRef.current[calculationId] = 0
+        // Cache the result if we're not checking a new plant
+        if (!newPlant) {
+          usedSpaceCache.current[cacheKey] = totalSpace
+        }
         return totalSpace
       } catch (error) {
         console.error(`Error calculating used space for row ${row?.id || "unknown"}:`, error)
@@ -380,8 +406,19 @@ export function useRows(gardenId: number | null, updatePlantUsage: (plantId: num
   // Calculate the percentage of used space in a row
   const calculateUsedPercentage = useCallback(
     (row: GardenRow): number => {
+      // Check if we have a cached value
+      const cacheKey = `row-${row.id}-${row.plants?.length || 0}`
+      if (usedPercentageCache.current[cacheKey] !== undefined) {
+        return usedPercentageCache.current[cacheKey]
+      }
+
       const usedSpace = calculateUsedSpace(row)
-      return Math.min(100, Math.round((usedSpace / row.length) * 100))
+      const percentage = Math.min(100, Math.round((usedSpace / row.length) * 100))
+
+      // Cache the result
+      usedPercentageCache.current[cacheKey] = percentage
+
+      return percentage
     },
     [calculateUsedSpace],
   )
@@ -406,6 +443,7 @@ export function useRows(gardenId: number | null, updatePlantUsage: (plantId: num
 
   // Plant Management Functions
   const addPlantToRow = async (rowId: number, plant: Plant) => {
+    clearUsedSpaceCache()
     if (!plant) return
 
     // Prevent multiple simultaneous operations on the same row
@@ -487,8 +525,8 @@ export function useRows(gardenId: number | null, updatePlantUsage: (plantId: num
       }
 
       // Update UI with optimistic plant
-      setRows(
-        rows.map((r) => {
+      setRows((prevRows) =>
+        prevRows.map((r) => {
           if (r.id === rowId) {
             return {
               ...r,
@@ -512,8 +550,8 @@ export function useRows(gardenId: number | null, updatePlantUsage: (plantId: num
       console.log(`Server returned new plant instance:`, newPlantInstance)
 
       // Update UI with actual plant from server
-      setRows(
-        rows.map((r) => {
+      setRows((prevRows) =>
+        prevRows.map((r) => {
           if (r.id === rowId) {
             return {
               ...r,
@@ -581,6 +619,7 @@ export function useRows(gardenId: number | null, updatePlantUsage: (plantId: num
   }
 
   const removePlant = async (rowId: number, plantInstanceId: number, plantId: number) => {
+    clearUsedSpaceCache()
     console.log(`Removing plant: rowId=${rowId}, plantInstanceId=${plantInstanceId}, plantId=${plantId}`)
 
     try {
@@ -718,13 +757,14 @@ export function useRows(gardenId: number | null, updatePlantUsage: (plantId: num
 
       toast({
         title: "Error",
-        description: "Failed to remove flower. See console for details.",
+        description: "Failed to remove flower",
         variant: "destructive",
       })
     }
   }
 
   const movePlant = async (rowId: number, plantIndex: number, direction: "left" | "right") => {
+    clearUsedSpaceCache()
     const row = rows.find((r) => r.id === rowId)
     if (!row || !row.plants) return
 
@@ -862,5 +902,6 @@ export function useRows(gardenId: number | null, updatePlantUsage: (plantId: num
     removePlant,
     movePlant,
     calculateNextPosition,
+    clearUsedSpaceCache,
   }
 }
