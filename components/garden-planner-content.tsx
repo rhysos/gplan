@@ -4,15 +4,15 @@ import { useGardenContext } from "@/context/GardenContext"
 import { InstructionsPanel } from "@/components/dashboard/instructions-panel"
 import { GardenPlannerHeader } from "@/components/garden-planner-header"
 import { GardenRows } from "@/components/garden-rows"
-import { Home } from "lucide-react"
+import { Home, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 // Import dialog components
 import { AddGardenDialog } from "@/components/dialogs/add-garden-dialog"
 import { EditGardenDialog } from "@/components/dialogs/edit-garden-dialog"
-import { AddRowDialog } from "@/components/dialogs/add-row-dialog"
-import { EditRowDialog } from "@/components/dialogs/edit-row-dialog"
-import { AddPlantDialog } from "@/components/dialogs/add-plant-dialog"
+import { AddRowDialogContext } from "@/components/dialogs/add-row-dialog-context" // Import the context version
+import { EditRowDialogContext } from "@/components/dialogs/edit-row-dialog-context" // Import the context version
+import { AddPlantDialogContext } from "@/components/dialogs/add-plant-dialog-context"
 
 // Content component that uses the context
 export function GardenPlannerContent() {
@@ -34,13 +34,8 @@ export function GardenPlannerContent() {
     startEditGarden,
     saveGardenEdit,
 
-    // Plants
-    plants,
-    usageCounts,
-
     // Rows
     rows,
-    rowsLoading,
     isAddingRow,
     setIsAddingRow,
     newRowName,
@@ -49,23 +44,14 @@ export function GardenPlannerContent() {
     setNewRowLength,
     newRowEnds,
     setNewRowEnds,
-    editingRow,
-    setEditingRow,
     addingPlantLoading,
-    selectedPlant,
-    setSelectedPlant,
-    addingPlantToRowId,
     setAddingPlantToRowId,
-    isAddPlantDialogOpen,
     setIsAddPlantDialogOpen,
     addRow,
     deleteRow,
     startEditRow,
-    saveRowEdit,
     calculateUsedSpace,
     calculateUsedPercentage,
-    wouldPlantFit,
-    addPlantToRow,
     removePlant,
     movePlant,
     movingPlant,
@@ -92,16 +78,6 @@ export function GardenPlannerContent() {
         </div>
       </div>
     )
-  }
-
-  // Handle adding a plant to a row
-  const handleAddPlantToRow = () => {
-    if (selectedPlant && addingPlantToRowId) {
-      const plant = plants.find((p) => p.id === selectedPlant)
-      if (plant) {
-        addPlantToRow(addingPlantToRowId, plant)
-      }
-    }
   }
 
   // Main component render
@@ -154,6 +130,7 @@ export function GardenPlannerContent() {
               Create your first garden to start planning your rows and plants.
             </p>
             <Button onClick={() => setIsAddingGarden(true)} className="bg-primary hover:bg-primary/90" size="lg">
+              <Plus size={18} className="mr-2" />
               Create Your First Garden
             </Button>
           </div>
@@ -184,37 +161,14 @@ export function GardenPlannerContent() {
         />
       )}
 
-      {/* Add Row Dialog */}
-      <AddRowDialog
-        open={isAddingRow}
-        onOpenChange={setIsAddingRow}
-        newRowName={newRowName}
-        setNewRowName={setNewRowName}
-        newRowLength={newRowLength}
-        setNewRowLength={setNewRowLength}
-        newRowEnds={newRowEnds}
-        setNewRowEnds={setNewRowEnds}
-        addRow={addRow}
-      />
+      {/* Add Row Dialog - Using the context version */}
+      <AddRowDialogContext />
 
-      {/* Edit Row Dialog */}
-      <EditRowDialog editingRow={editingRow} setEditingRow={setEditingRow} saveRowEdit={saveRowEdit} />
+      {/* Edit Row Dialog - Using the context version */}
+      <EditRowDialogContext />
 
-      {/* Add Plant Dialog */}
-      <AddPlantDialog
-        open={isAddPlantDialogOpen}
-        onOpenChange={setIsAddPlantDialogOpen}
-        plants={plants}
-        rows={rows}
-        selectedPlant={selectedPlant}
-        setSelectedPlant={setSelectedPlant}
-        addingPlantToRowId={addingPlantToRowId}
-        setAddingPlantToRowId={setAddingPlantToRowId}
-        addingPlantLoading={addingPlantLoading}
-        usageCounts={usageCounts}
-        wouldPlantFit={wouldPlantFit}
-        addPlantToRow={handleAddPlantToRow}
-      />
+      {/* Add Plant Dialog - Using the context version */}
+      <AddPlantDialogContext />
 
       {/* Instructions Modal */}
       <InstructionsPanel open={isInstructionsOpen} onOpenChange={setIsInstructionsOpen} />
