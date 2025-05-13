@@ -22,23 +22,15 @@ export default function DashboardLayout({
       <header className="border-b">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <Link href="/dashboard" className="flex items-center">
-            {/* Option 1: Using Next.js Image with proper configuration */}
             <Image
-              src="https://res.cloudinary.com/amethyst/image/upload/v1746592812/g-plan_vktxdk.png"
-              alt="G-PLAN - See Your Garden"
+              src="https://res.cloudinary.com/amethyst/image/upload/v1747118085/bloomsinrows_iya38x.png"
+              alt="Blooms In Rows"
               width={180}
               height={50}
-              className="h-10 w-auto"
+              className="h-8 sm:h-10 w-auto object-contain"
               priority
               unoptimized
             />
-
-            {/* Option 2: If Image component is causing issues, use standard img tag */}
-            {/* <img
-              src="https://res.cloudinary.com/amethyst/image/upload/v1746592812/g-plan_vktxdk.png"
-              alt="G-PLAN - See Your Garden"
-              className="h-10 w-auto"
-            /> */}
           </Link>
           <nav className="flex items-center gap-2">
             <Button variant={pathname === "/dashboard" ? "default" : "ghost"} asChild size="sm" className="text-xs">

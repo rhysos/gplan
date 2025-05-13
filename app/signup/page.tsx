@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { signupUser } from "@/lib/actions"
+import Image from "next/image"
 
 export default function SignupPage() {
   const router = useRouter()
@@ -52,6 +53,17 @@ export default function SignupPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-muted/40 px-4">
       <Card className="w-full max-w-md">
+        <div className="flex justify-center my-6">
+          <Image
+            src="https://res.cloudinary.com/amethyst/image/upload/v1747118085/bloomsinrows_iya38x.png"
+            alt="Blooms In Rows"
+            width={220}
+            height={60}
+            className="h-12 w-auto"
+            priority
+            unoptimized
+          />
+        </div>
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold">Create an account</CardTitle>
           <CardDescription>Enter your information to create a garden planner account</CardDescription>

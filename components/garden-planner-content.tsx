@@ -2,16 +2,16 @@
 
 import { useGardenContext } from "@/context/GardenContext"
 import { InstructionsPanel } from "@/components/dashboard/instructions-panel"
-import { GardenPlannerHeader } from "@/components/garden-planner-header"
-import { GardenRows } from "@/components/garden-rows"
+import { GardenPlannerHeaderContext } from "@/components/garden-planner-header-context"
+import { GardenRowsContext } from "@/components/garden-rows-context"
 import { Home, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 // Import dialog components
-import { AddGardenDialog } from "@/components/dialogs/add-garden-dialog"
-import { EditGardenDialog } from "@/components/dialogs/edit-garden-dialog"
-import { AddRowDialogContext } from "@/components/dialogs/add-row-dialog-context" // Import the context version
-import { EditRowDialogContext } from "@/components/dialogs/edit-row-dialog-context" // Import the context version
+import { AddGardenDialogContext } from "@/components/dialogs/add-garden-dialog-context"
+import { EditGardenDialogContext } from "@/components/dialogs/edit-garden-dialog-context"
+import { AddRowDialogContext } from "@/components/dialogs/add-row-dialog-context"
+import { EditRowDialogContext } from "@/components/dialogs/edit-row-dialog-context"
 import { AddPlantDialogContext } from "@/components/dialogs/add-plant-dialog-context"
 
 // Content component that uses the context
@@ -19,53 +19,13 @@ export function GardenPlannerContent() {
   const {
     // Gardens
     gardens,
-    currentGardenId,
-    setCurrentGardenId,
-    currentGardenName,
     gardensLoading,
     isAddingGarden,
     setIsAddingGarden,
-    newGardenName,
-    setNewGardenName,
-    editingGarden,
-    setEditingGarden,
-    addGarden,
-    deleteGarden,
-    startEditGarden,
-    saveGardenEdit,
-
-    // Rows
-    rows,
-    isAddingRow,
-    setIsAddingRow,
-    newRowName,
-    setNewRowName,
-    newRowLength,
-    setNewRowLength,
-    newRowEnds,
-    setNewRowEnds,
-    addingPlantLoading,
-    setAddingPlantToRowId,
-    setIsAddPlantDialogOpen,
-    addRow,
-    deleteRow,
-    startEditRow,
-    calculateUsedSpace,
-    calculateUsedPercentage,
-    removePlant,
-    movePlant,
-    movingPlant,
 
     // UI state
-    viewMode,
-    setViewMode,
-    isMobileMenuOpen,
-    setIsMobileMenuOpen,
     isInstructionsOpen,
     setIsInstructionsOpen,
-
-    // Auth
-    handleLogout,
   } = useGardenContext()
 
   // Show loading spinner while data is being fetched
@@ -83,40 +43,8 @@ export function GardenPlannerContent() {
   // Main component render
   return (
     <div className="container mx-auto py-6 px-4">
-      {/* Garden Planner Header */}
-      <GardenPlannerHeader
-        gardens={gardens}
-        currentGardenId={currentGardenId}
-        setCurrentGardenId={setCurrentGardenId}
-        currentGardenName={currentGardenName}
-        isAddingGarden={isAddingGarden}
-        setIsAddingGarden={setIsAddingGarden}
-        startEditGarden={startEditGarden}
-        deleteGarden={deleteGarden}
-        handleLogout={handleLogout}
-        viewMode={viewMode}
-        setViewMode={setViewMode}
-        isMobileMenuOpen={isMobileMenuOpen}
-        setIsMobileMenuOpen={setIsMobileMenuOpen}
-        isInstructionsOpen={isInstructionsOpen}
-        setIsInstructionsOpen={setIsInstructionsOpen}
-      />
-
-      {/* Add Garden Dialog */}
-      <AddGardenDialog
-        open={isAddingGarden}
-        onOpenChange={setIsAddingGarden}
-        newGardenName={newGardenName}
-        setNewGardenName={setNewGardenName}
-        addGarden={addGarden}
-      />
-
-      {/* Edit Garden Dialog */}
-      <EditGardenDialog
-        editingGarden={editingGarden}
-        setEditingGarden={setEditingGarden}
-        saveGardenEdit={saveGardenEdit}
-      />
+      {/* Garden Planner Header - Using context version */}
+      <GardenPlannerHeaderContext />
 
       {/* No Gardens State */}
       {gardens.length === 0 ? (
@@ -136,38 +64,14 @@ export function GardenPlannerContent() {
           </div>
         </div>
       ) : (
-        <GardenRows
-          rows={rows}
-          viewMode={viewMode}
-          isAddingRow={isAddingRow}
-          setIsAddingRow={setIsAddingRow}
-          newRowName={newRowName}
-          setNewRowName={setNewRowName}
-          newRowLength={newRowLength}
-          setNewRowLength={setNewRowLength}
-          newRowEnds={newRowEnds}
-          setNewRowEnds={setNewRowEnds}
-          addRow={addRow}
-          deleteRow={deleteRow}
-          startEditRow={startEditRow}
-          addingPlantLoading={addingPlantLoading}
-          setAddingPlantToRowId={setAddingPlantToRowId}
-          setIsAddPlantDialogOpen={setIsAddPlantDialogOpen}
-          calculateUsedSpace={calculateUsedSpace}
-          calculateUsedPercentage={calculateUsedPercentage}
-          removePlant={removePlant}
-          movePlant={movePlant}
-          movingPlant={movingPlant}
-        />
+        <GardenRowsContext />
       )}
 
-      {/* Add Row Dialog - Using the context version */}
+      {/* Dialog Components - Using context versions */}
+      <AddGardenDialogContext />
+      <EditGardenDialogContext />
       <AddRowDialogContext />
-
-      {/* Edit Row Dialog - Using the context version */}
       <EditRowDialogContext />
-
-      {/* Add Plant Dialog - Using the context version */}
       <AddPlantDialogContext />
 
       {/* Instructions Modal */}
