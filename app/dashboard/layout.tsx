@@ -23,7 +23,7 @@ export default function DashboardLayout({
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <Link href="/dashboard" className="flex items-center">
             <Image
-              src="https://res.cloudinary.com/amethyst/image/upload/v1747118085/bloomsinrows_iya38x.png"
+              src="https://res.cloudinary.com/amethyst/image/upload/v1747123032/bloomsinrows1_dav8n8.png"
               alt="Blooms In Rows"
               width={240}
               height={70}
