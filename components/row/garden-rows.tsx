@@ -259,19 +259,18 @@ export function GardenRows({
                           </div>
 
                           {/* Right end */}
-                          <div
-                            className="absolute top-2 bottom-6 border border-dashed rounded-md"
-                            style={{
-                              right: 0,
-                              width: `${row.row_ends * 3}px`,
-                              backgroundColor: "rgba(138, 161, 177, 0.1)",
-                              borderColor: "rgba(138, 161, 177, 0.3)",
-                            }}
-                          >
-                            <div className="h-full flex items-center justify-center">
-                              <span className="text-xs rotate-90 text-muted-foreground">Row end</span>
+                         <div className="absolute top-2 bottom-6 border border-dashed rounded-md"
+  style={{
+    left: `${(row.length - row.row_ends) * 3}px`,
+    width: `${row.row_ends * 3}px`,
+    backgroundColor: "rgba(138, 161, 177, 0.1)",
+    borderColor: "rgba(138, 161, 177, 0.3)",
+  }}
+>
+                              <div className="h-full flex items-center justify-center">
+                                    <span className="text-xs rotate-90 text-muted-foreground">Row end</span>
+                              </div>
                             </div>
-                          </div>
                         </>
                       )}
 
