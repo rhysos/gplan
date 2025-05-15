@@ -73,7 +73,7 @@ export const RowVisualization: React.FC<RowVisualizationProps> = ({ row, movePla
             <div
               className="absolute top-2 bottom-6 border border-dashed rounded-md"
               style={{
-                right: `0px`,
+                
                 left: `auto`,
                 width: `${row.row_ends * 3}px`,
                 transform: `translateX(-100%)`,
