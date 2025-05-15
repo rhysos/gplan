@@ -1,10 +1,8 @@
 "use client"
-import React from "react"
+import type React from "react"
 import { CloudinaryImage } from "@/components/common/cloudinary-image"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft, ChevronRight, Trash2 } from "lucide-react"
-import { Progress } from "@/components/ui/progress"
-import { Badge } from "@/components/ui/badge"
 
 // TypeScript interfaces for props
 interface PlantInstance {
@@ -31,17 +29,17 @@ interface RowVisualizationProps {
   movingPlant: boolean
 }
 
-export const RowVisualization: React.FC<RowVisualizationProps> = ({
-  row,
-  movePlant,
-  removePlant,
-  movingPlant,
-}) => {
+export const RowVisualization: React.FC<RowVisualizationProps> = ({ row, movePlant, removePlant, movingPlant }) => {
   return (
     <div className="relative h-36 rounded-lg overflow-x-auto custom-scrollbar bg-muted/20">
       <div
-        className="relative top-0 left-0 h-full items-center"
-        style={{ width: `${row.length * 3}px`, minWidth: `${row.length * 3}px`, maxWidth: `${row.length * 3}px`}}
+        className="relative top-0 left-0 h-full items-center inline-block"
+        style={{
+          width: `${row.length * 3}px`,
+          minWidth: `${row.length * 3}px`,
+          maxWidth: `${row.length * 3}px`,
+          position: "relative",
+        }}
       >
         {/* Visualize Ruler */}
         {Array.from({ length: Math.ceil(row.length / 100) + 1 }).map((_, i) => (
@@ -75,8 +73,11 @@ export const RowVisualization: React.FC<RowVisualizationProps> = ({
             <div
               className="absolute top-2 bottom-6 border border-dashed rounded-md"
               style={{
-                left: `${(row.length - row.row_ends) * 3}px`,
+                right: `0px`,
+                left: `auto`,
                 width: `${row.row_ends * 3}px`,
+                transform: `translateX(-100%)`,
+                marginLeft: `${row.row_ends * 3}px`,
                 backgroundColor: "rgba(138, 161, 177, 0.1)",
                 borderColor: "rgba(138, 161, 177, 0.3)",
               }}
