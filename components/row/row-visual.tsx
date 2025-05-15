@@ -40,8 +40,8 @@ export const RowVisualization: React.FC<RowVisualizationProps> = ({
   return (
     <div className="relative h-36 rounded-lg overflow-x-auto custom-scrollbar bg-muted/20">
       <div
-        className="absolute top-0 left-0 h-full flex items-center"
-        style={{ width: `${row.length * 3}px`, minWidth: `${row.length * 3}px` }}
+        className="relative top-0 left-0 h-full flex items-center"
+        style={{ width: `${row.length * 3}px`, minWidth: "100%" }}
       >
         {/* Visualize Ruler */}
         {Array.from({ length: Math.ceil(row.length / 100) + 1 }).map((_, i) => (
