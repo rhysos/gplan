@@ -1,5 +1,5 @@
 "use client"
-import { Plus, Trash2, Edit, Home, ChevronDown, LogOut, LayoutGrid, Menu, X, Lightbulb } from "lucide-react"
+import { Plus, Trash2, Edit, Home, ChevronDown, LogOut, LayoutGrid, Menu, X, Lightbulb, Eye } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -33,6 +33,7 @@ interface GardenPlannerHeaderProps {
   setIsMobileMenuOpen: (value: boolean) => void
   isInstructionsOpen: boolean
   setIsInstructionsOpen: (value: boolean) => void
+  toggleSimplifiedView: () => void
 }
 
 export function GardenPlannerHeader({
@@ -51,6 +52,7 @@ export function GardenPlannerHeader({
   setIsMobileMenuOpen,
   isInstructionsOpen,
   setIsInstructionsOpen,
+  toggleSimplifiedView,
 }: GardenPlannerHeaderProps) {
   return (
     <header className="mb-4">
@@ -105,7 +107,16 @@ export function GardenPlannerHeader({
           </div>
 
           {/* Instructions Button (Middle) - Mobile version */}
-          <div className="md:hidden">
+          <div className="md:hidden flex gap-2">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={toggleSimplifiedView}
+              aria-label="Garden View"
+              className="h-9 w-9"
+            >
+              <Eye className="h-5 w-5 text-blue-500" />
+            </Button>
             <Button
               variant="outline"
               size="icon"
@@ -128,6 +139,15 @@ export function GardenPlannerHeader({
         {/* Instructions Button (Middle) */}
         <div className="hidden md:flex flex-1 justify-left">
           <div className="mx-2">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={toggleSimplifiedView}
+              aria-label="Garden View"
+              className="h-9 w-9 mr-2"
+            >
+              <Eye className="h-5 w-5 text-blue-500" />
+            </Button>
             <Button
               variant="outline"
               size="icon"
