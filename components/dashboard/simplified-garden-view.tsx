@@ -59,12 +59,14 @@ export function SimplifiedGardenView({ isOpen, onClose, rows, gardenName }: Simp
           {rows.map((row) => (
             <div key={row.id} className="bg-white dark:bg-gray-900 rounded-lg shadow p-4">
               <h2 className="text-lg font-medium mb-2">{row.name}</h2>
-              <RowVisualization
-                row={row}
-                movePlant={dummyMovePlant}
-                removePlant={dummyRemovePlant}
-                movingPlant={false}
-              />
+              <div className="h-48 overflow-x-auto overflow-y-hidden">
+                <RowVisualization
+                  row={row}
+                  movePlant={dummyMovePlant}
+                  removePlant={dummyRemovePlant}
+                  movingPlant={false}
+                />
+              </div>
             </div>
           ))}
         </div>

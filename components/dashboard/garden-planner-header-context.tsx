@@ -12,6 +12,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useGardenContext } from "@/context/garden-context"
 import { useState } from "react"
+import { SimplifiedGardenView } from "./simplified-garden-view"
 
 export function GardenPlannerHeaderContext() {
   const {
@@ -30,6 +31,7 @@ export function GardenPlannerHeaderContext() {
     setIsMobileMenuOpen,
     isInstructionsOpen,
     setIsInstructionsOpen,
+    rows,
   } = useGardenContext()
 
   const [isSimplifiedViewOpen, setIsSimplifiedViewOpen] = useState(false)
@@ -252,21 +254,13 @@ export function GardenPlannerHeaderContext() {
         </div>
       )}
 
-      {/* Simplified View Modal */}
-      {isSimplifiedViewOpen && (
-        <div className="fixed inset-0 bg-white z-50 p-4 overflow-auto">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-bold">{currentGardenName} - Garden View</h2>
-            <Button variant="ghost" size="icon" onClick={toggleSimplifiedView}>
-              <X className="h-6 w-6" />
-            </Button>
-          </div>
-          <div className="space-y-8">
-            {/* This is where we would render the garden rows in a simplified view */}
-            <p className="text-center text-muted-foreground">Simplified garden view will be displayed here.</p>
-          </div>
-        </div>
-      )}
+      {/* Simplified Garden View */}
+      <SimplifiedGardenView
+        isOpen={isSimplifiedViewOpen}
+        onClose={toggleSimplifiedView}
+        rows={rows || []}
+        gardenName={currentGardenName || "Garden"}
+      />
     </header>
   )
 }

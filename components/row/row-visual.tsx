@@ -31,7 +31,7 @@ interface RowVisualizationProps {
 
 export const RowVisualization: React.FC<RowVisualizationProps> = ({ row, movePlant, removePlant, movingPlant }) => {
   return (
-    <div className="relative h-36 rounded-lg overflow-x-auto custom-scrollbar bg-muted/20">
+    <div className="relative h-full rounded-lg bg-muted/20">
       <div
         className="relative top-0 left-0 h-full items-center inline-block"
         style={{
@@ -73,7 +73,7 @@ export const RowVisualization: React.FC<RowVisualizationProps> = ({ row, movePla
             <div
               className="absolute top-2 bottom-6 border border-dashed rounded-md"
               style={{
-                
+                right: `0px`,
                 left: `auto`,
                 width: `${row.row_ends * 3}px`,
                 transform: `translateX(-100%)`,
