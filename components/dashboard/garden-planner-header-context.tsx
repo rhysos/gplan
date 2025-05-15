@@ -1,5 +1,5 @@
 "use client"
-import { Plus, Trash2, Edit, Home, ChevronDown, LogOut, LayoutGrid, Menu, X, Lightbulb } from "lucide-react"
+import { Plus, Trash2, Edit, Home, ChevronDown, LogOut, LayoutGrid, Menu, X, Lightbulb, Eye } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -11,6 +11,7 @@ import {
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useGardenContext } from "@/context/garden-context"
+import { useState } from "react"
 
 export function GardenPlannerHeaderContext() {
   const {
@@ -30,6 +31,12 @@ export function GardenPlannerHeaderContext() {
     isInstructionsOpen,
     setIsInstructionsOpen,
   } = useGardenContext()
+
+  const [isSimplifiedViewOpen, setIsSimplifiedViewOpen] = useState(false)
+
+  const toggleSimplifiedView = () => {
+    setIsSimplifiedViewOpen(!isSimplifiedViewOpen)
+  }
 
   return (
     <header className="mb-4">
@@ -84,7 +91,16 @@ export function GardenPlannerHeaderContext() {
           </div>
 
           {/* Instructions Button (Middle) - Mobile version */}
-          <div className="md:hidden">
+          <div className="md:hidden flex gap-2">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={toggleSimplifiedView}
+              aria-label="Garden View"
+              className="h-9 w-9"
+            >
+              <Eye className="h-5 w-5 text-blue-500" />
+            </Button>
             <Button
               variant="outline"
               size="icon"
@@ -107,6 +123,15 @@ export function GardenPlannerHeaderContext() {
         {/* Instructions Button (Middle) */}
         <div className="hidden md:flex flex-1 justify-left">
           <div className="mx-2">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={toggleSimplifiedView}
+              aria-label="Garden View"
+              className="h-9 w-9 mr-2"
+            >
+              <Eye className="h-5 w-5 text-blue-500" />
+            </Button>
             <Button
               variant="outline"
               size="icon"
@@ -223,6 +248,22 @@ export function GardenPlannerHeaderContext() {
                 Logout
               </Button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Simplified View Modal */}
+      {isSimplifiedViewOpen && (
+        <div className="fixed inset-0 bg-white z-50 p-4 overflow-auto">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-bold">{currentGardenName} - Garden View</h2>
+            <Button variant="ghost" size="icon" onClick={toggleSimplifiedView}>
+              <X className="h-6 w-6" />
+            </Button>
+          </div>
+          <div className="space-y-8">
+            {/* This is where we would render the garden rows in a simplified view */}
+            <p className="text-center text-muted-foreground">Simplified garden view will be displayed here.</p>
           </div>
         </div>
       )}
