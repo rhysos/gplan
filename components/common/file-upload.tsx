@@ -7,7 +7,7 @@ import { Upload, X, Loader2, AlertCircle, Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { uploadImage } from "@/lib/actions/cloudinary-actions"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { CloudinaryImage } from "@/components/cloudinary-image"
+import { CloudinaryImage } from "@/components/common/cloudinary-image"
 
 interface FileUploadProps {
   onUploadComplete: (imageUrl: string) => void

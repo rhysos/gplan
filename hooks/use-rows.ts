@@ -11,7 +11,7 @@ import {
   addPlantToRow as serverAddPlantToRow,
   removePlantFromRow,
 } from "@/lib/actions"
-import type { Plant } from "./usePlants"
+import type { Plant } from "./use-plants"
 
 export interface PlantInstance {
   id: number

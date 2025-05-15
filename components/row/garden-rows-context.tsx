@@ -2,11 +2,11 @@
 import { Plus, Trash2, Edit, Settings, Ruler, Flower, ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { CloudinaryImage } from "@/components/cloudinary-image"
+import { CloudinaryImage } from "@/components/common/cloudinary-image"
 import { Progress } from "@/components/ui/progress"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Badge } from "@/components/ui/badge"
-import { useGardenContext } from "@/context/GardenContext"
+import { useGardenContext } from "@/context/garden-context"
 import { memo, useMemo } from "react"
 
 // Create a memoized row component to prevent unnecessary re-renders

@@ -13,7 +13,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { useGardenContext } from "@/context/GardenContext"
+import { useGardenContext } from "@/context/garden-context"
 
 export function EditRowDialogContext() {
   const { editingRow, setEditingRow, saveRowEdit } = useGardenContext()

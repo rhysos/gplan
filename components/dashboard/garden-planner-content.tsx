@@ -1,9 +1,9 @@
 "use client"
 
-import { useGardenContext } from "@/context/GardenContext"
+import { useGardenContext } from "@/context/garden-context"
 import { InstructionsPanel } from "@/components/dashboard/instructions-panel"
-import { GardenPlannerHeaderContext } from "@/components/garden-planner-header-context"
-import { GardenRowsContext } from "@/components/garden-rows-context"
+import { GardenPlannerHeaderContext } from "@/components/dashboard/garden-planner-header-context"
+import { GardenRowsContext } from "@/components/row/garden-rows-context"
 import { Home, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
@@ -12,7 +12,7 @@ import { AddGardenDialogContext } from "@/components/dialogs/add-garden-dialog-c
 import { EditGardenDialogContext } from "@/components/dialogs/edit-garden-dialog-context"
 import { AddRowDialogContext } from "@/components/dialogs/add-row-dialog-context"
 import { EditRowDialogContext } from "@/components/dialogs/edit-row-dialog-context"
-import { AddPlantDialogContext } from "@/components/dialogs/add-plant-dialog-context"
+import { AddPlantDialogContext } from "@/components/dialogs/place-plant-dialog-context"
 
 // Content component that uses the context
 export function GardenPlannerContent() {

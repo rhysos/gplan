@@ -1,9 +1,9 @@
 "use client"
 
 import React, { createContext, useContext, type ReactNode } from "react"
-import { useGardens, type Garden } from "@/hooks/useGardens"
-import { usePlants, type Plant } from "@/hooks/usePlants"
-import { useRows, type GardenRow } from "@/hooks/useRows"
+import { useGardens, type Garden } from "@/hooks/use-gardens"
+import { usePlants, type Plant } from "@/hooks/use-plants"
+import { useRows, type GardenRow } from "@/hooks/use-rows"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import { logoutUser } from "@/lib/actions"

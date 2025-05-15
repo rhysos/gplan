@@ -5,7 +5,7 @@ import type React from "react"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { CloudinaryImage } from "@/components/cloudinary-image"
+import { CloudinaryImage } from "@/components/common/cloudinary-image"
 
 interface ImageUrlInputProps {
   onImageUrlChange: (url: string) => void

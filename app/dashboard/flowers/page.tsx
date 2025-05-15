@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation"
 import { getAllFlowers, getFlowerUsageCounts } from "@/lib/actions/flower-actions"
 import { getCurrentUser } from "@/lib/auth"
-import FlowerManagement from "@/components/flower-management"
+import FlowerManagement from "@/components/flower/flower-management"
 
 export const dynamic = 'force-dynamic'
 

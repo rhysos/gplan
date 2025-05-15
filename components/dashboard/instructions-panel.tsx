@@ -3,7 +3,7 @@
 import { Lightbulb } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
-import { CloudinaryImage } from "@/components/cloudinary-image"
+import { CloudinaryImage } from "@/components/common/cloudinary-image"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 interface InstructionsPanelProps {

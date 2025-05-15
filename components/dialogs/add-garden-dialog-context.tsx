@@ -11,7 +11,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog"
-import { useGardenContext } from "@/context/GardenContext"
+import { useGardenContext } from "@/context/garden-context"
 
 export function AddGardenDialogContext() {
   const { isAddingGarden, setIsAddingGarden, newGardenName, setNewGardenName, addGarden } = useGardenContext()

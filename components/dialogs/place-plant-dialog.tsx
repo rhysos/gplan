@@ -13,44 +13,42 @@ import {
 } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { useGardenContext } from "@/context/GardenContext"
-import { CloudinaryImage } from "@/components/cloudinary-image"
+import type { Plant } from "@/hooks/use-plants"
+import type { GardenRow } from "@/hooks/use-rows"
 
-export function AddPlantDialogContext() {
-  const {
-    // Plant dialog state
-    isAddPlantDialogOpen,
-    setIsAddPlantDialogOpen,
-    selectedPlant,
-    setSelectedPlant,
-    addingPlantToRowId,
-    setAddingPlantToRowId,
-    addingPlantLoading,
+interface AddPlantDialogProps {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  plants: Plant[]
+  rows: GardenRow[]
+  selectedPlant: number | null
+  setSelectedPlant: (id: number | null) => void
+  addingPlantToRowId: number | null
+  setAddingPlantToRowId: (id: number | null) => void
+  addingPlantLoading: number | null
+  usageCounts: Record<number, number>
+  wouldPlantFit: (row: GardenRow, plant: Plant) => boolean
+  addPlantToRow: () => void
+}
 
-    // Data
-    plants,
-    rows,
-    usageCounts,
-
-    // Functions
-    wouldPlantFit,
-    addPlantToRow,
-  } = useGardenContext()
-
+export function AddPlantDialog({
+  open,
+  onOpenChange,
+  plants,
+  rows,
+  selectedPlant,
+  setSelectedPlant,
+  addingPlantToRowId,
+  setAddingPlantToRowId,
+  addingPlantLoading,
+  usageCounts,
+  wouldPlantFit,
+  addPlantToRow,
+}: AddPlantDialogProps) {
   const handleClose = () => {
-    setIsAddPlantDialogOpen(false)
+    onOpenChange(false)
     setAddingPlantToRowId(null)
     setSelectedPlant(null)
-  }
-
-  // Handle adding a plant to a row
-  const handleAddPlantToRow = () => {
-    if (selectedPlant && addingPlantToRowId) {
-      const plant = plants.find((p) => p.id === selectedPlant)
-      if (plant) {
-        addPlantToRow(addingPlantToRowId, plant)
-      }
-    }
   }
 
   const currentRow = rows.find((r) => r.id === addingPlantToRowId)
@@ -99,7 +97,7 @@ export function AddPlantDialogContext() {
   const positionPreview = getPositionPreview()
 
   return (
-    <Dialog open={isAddPlantDialogOpen} onOpenChange={handleClose}>
+    <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Add Flower to Row</DialogTitle>
@@ -190,11 +188,9 @@ export function AddPlantDialogContext() {
                   } ${isSelected ? "bg-primary/10 border border-primary/30" : "border border-transparent"}`}
                 >
                   <div className="w-12 h-12 rounded-md overflow-hidden flex-shrink-0">
-                    <CloudinaryImage
-                      src={plant.image_url || "/placeholder.svg?height=80&width=80"}
+                    <img
+                      src={plant.image_url || "/placeholder.svg"}
                       alt={plant.name}
-                      width={48}
-                      height={48}
                       className="w-full h-full object-cover"
                     />
                   </div>
@@ -224,7 +220,7 @@ export function AddPlantDialogContext() {
             Cancel
           </Button>
           <Button
-            onClick={handleAddPlantToRow}
+            onClick={addPlantToRow}
             disabled={!selectedPlant || addingPlantLoading}
             className="bg-primary hover:bg-primary/90"
           >

@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation"
 import { getCurrentUser } from "@/lib/auth"
-import GardenPlanner from "@/components/garden-planner"
+import GardenPlanner from "@/components/dashboard/garden-planner"
 
 export const dynamic = "force-dynamic"
 

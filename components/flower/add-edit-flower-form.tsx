@@ -2,17 +2,15 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Slider } from "@/components/ui/slider"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ImageUrlInput } from "@/components/image-url-input"
-import { ImageUpload } from "@/components/image-upload"
-import { CloudinaryImage } from "@/components/cloudinary-image"
+import { ImageUrlInput } from "@/components/common/image-url-input"
+import { FileUpload } from "@/components/common/file-upload"
+import { CloudinaryImage } from "@/components/common/cloudinary-image"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
-import { ScrollArea } from "@/components/ui/scroll-area"
 
 interface FlowerFormProps {
   open: boolean
@@ -20,19 +18,42 @@ interface FlowerFormProps {
   onSubmit: (flower: { name: string; spacing: number; image_url: string; quantity: number }) => Promise<void>
   isLoading?: boolean
   initialFlower?: { name: string; spacing: number; image_url: string; quantity: number } | null
+  plants?: { id: number; name: string; spacing: number; image_url: string; quantity?: number; used_count?: number }[]
 }
 
-export function FlowerForm({ open, onOpenChange, onSubmit, isLoading = false, initialFlower = null }: FlowerFormProps) {
+export function FlowerForm({
+  open,
+  onOpenChange,
+  onSubmit,
+  isLoading = false,
+  initialFlower = null,
+  plants,
+}: FlowerFormProps) {
   const [name, setName] = useState(initialFlower?.name || "")
   const [spacing, setSpacing] = useState(initialFlower?.spacing || 30)
   const [imageUrl, setImageUrl] = useState(initialFlower?.image_url || "")
-  const [quantity, setQuantity] = useState(initialFlower?.quantity || 10)
+  const [quantity, setQuantity] = useState(initialFlower?.quantity || 1)
   const [activeTab, setActiveTab] = useState<string>("url")
+
+  // Reset form when initialFlower changes
+  useEffect(() => {
+    if (initialFlower) {
+      setName(initialFlower.name || "")
+      setSpacing(initialFlower.spacing || 30)
+      setImageUrl(initialFlower.image_url || "")
+      setQuantity(initialFlower.quantity || 1)
+    }
+  }, [initialFlower])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    await onSubmit({ name, spacing, image_url: imageUrl, quantity })
-    resetForm()
+    if (!name || !imageUrl) return
+    try {
+      await onSubmit({ name, spacing, image_url: imageUrl, quantity })
+      onOpenChange(false)
+    } catch (error) {
+      console.error("Error submitting form:", error)
+    }
   }
 
   const resetForm = () => {
@@ -40,7 +61,8 @@ export function FlowerForm({ open, onOpenChange, onSubmit, isLoading = false, in
       setName("")
       setSpacing(30)
       setImageUrl("")
-      setQuantity(10)
+      setQuantity(1)
+      setActiveTab("url")
     }
   }
 
@@ -50,17 +72,23 @@ export function FlowerForm({ open, onOpenChange, onSubmit, isLoading = false, in
   }
 
   const handleImageUpload = (url: string) => {
+    console.log("Image URL received:", url)
     setImageUrl(url)
   }
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-md max-h-[90vh] overflow-hidden flex flex-col">
+      <DialogContent className="max-w-md" aria-describedby="flower-form-description">
         <DialogHeader>
           <DialogTitle>{initialFlower ? "Edit Flower" : "Add New Flower"}</DialogTitle>
+          <p id="flower-form-description" className="text-sm text-muted-foreground">
+            Enter the flower details below.
+          </p>
         </DialogHeader>
-        <ScrollArea className="flex-1 pr-4 max-h-[60vh]">
-          <form onSubmit={handleSubmit} className="space-y-6">
+
+        {/* Main content with native scrolling */}
+        <div className="overflow-y-auto max-h-[60vh] pr-2 my-4 custom-scrollbar">
+          <form id="flower-form" onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="flower-name">Flower Name</Label>
               <Input
@@ -73,18 +101,22 @@ export function FlowerForm({ open, onOpenChange, onSubmit, isLoading = false, in
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="flower-spacing">Spacing (cm)</Label>
-              <div className="flex items-center gap-4">
-                <Slider
+              <div className="flex justify-between items-center">
+                <Label htmlFor="flower-spacing">Spacing (cm)</Label>
+                <span className="text-sm text-muted-foreground">{(spacing / 100).toFixed(2)} m</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Input
                   id="flower-spacing"
-                  value={[spacing]}
-                  onValueChange={(value) => setSpacing(value[0])}
-                  min={10}
-                  max={100}
-                  step={5}
+                  type="number"
+                  min="5"
+                  max="100"
+                  value={spacing}
+                  onChange={(e) => setSpacing(Number(e.target.value))}
+                  onClick={(e) => e.currentTarget.select()}
                   className="flex-1"
                 />
-                <span className="w-12 text-right">{spacing} cm</span>
+                <span className="text-sm">cm</span>
               </div>
             </div>
 
@@ -95,7 +127,7 @@ export function FlowerForm({ open, onOpenChange, onSubmit, isLoading = false, in
                 type="number"
                 min="0"
                 value={quantity}
-                onChange={(e) => setQuantity(Number.parseInt(e.target.value) || 0)}
+                onChange={(e) => setQuantity(Number.parseInt(e.target.value) || 1)}
                 placeholder="e.g., 10"
                 required
               />
@@ -112,7 +144,7 @@ export function FlowerForm({ open, onOpenChange, onSubmit, isLoading = false, in
                   <ImageUrlInput onImageUrlChange={setImageUrl} initialUrl={imageUrl} />
                 </TabsContent>
                 <TabsContent value="upload" className="pt-4">
-                  <ImageUpload onUploadComplete={handleImageUpload} />
+                  <FileUpload onUploadComplete={handleImageUpload} />
                 </TabsContent>
               </Tabs>
 
@@ -126,13 +158,15 @@ export function FlowerForm({ open, onOpenChange, onSubmit, isLoading = false, in
                     height={100}
                     className="rounded-md"
                   />
+                  <p className="text-xs text-muted-foreground mt-1 break-all">{imageUrl}</p>
                 </div>
               )}
             </div>
           </form>
-        </ScrollArea>
-        <DialogFooter className="pt-4 border-t mt-4 flex-shrink-0">
-          <Button type="button" onClick={handleSubmit} disabled={isLoading || !name || !imageUrl}>
+        </div>
+
+        <DialogFooter className="pt-4 border-t mt-2">
+          <Button type="submit" form="flower-form" disabled={isLoading || !name || !imageUrl}>
             {isLoading ? (initialFlower ? "Updating..." : "Adding...") : initialFlower ? "Update Flower" : "Add Flower"}
           </Button>
         </DialogFooter>

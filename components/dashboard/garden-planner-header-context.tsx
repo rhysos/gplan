@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { useGardenContext } from "@/context/GardenContext"
+import { useGardenContext } from "@/context/garden-context"
 
 export function GardenPlannerHeaderContext() {
   const {

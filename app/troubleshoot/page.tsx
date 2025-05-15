@@ -1,5 +1,5 @@
-import { EnvironmentChecker } from "@/components/env-checker"
-import { EnvironmentTroubleshooter } from "@/components/env-troubleshooter"
+import { EnvironmentChecker } from "@/components/common/env-checker"
+import { EnvironmentTroubleshooter } from "@/components/common/env-troubleshooter"
 
 export const metadata = {
   title: "Environment Troubleshooter",
